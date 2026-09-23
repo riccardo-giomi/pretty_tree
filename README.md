@@ -71,7 +71,7 @@ A `Formatter` controls how a value is turned into a label (defaults to `#inspect
 
 ```ruby
 class MyFormatter < PrettyTree::Formatter
-  def call(value) = value.to_s.upcase
+  def label(value) = value.to_s.upcase
 end
 
 PrettyTree.render(my_tree, formatter: MyFormatter.new)

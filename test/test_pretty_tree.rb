@@ -15,6 +15,10 @@ class TestPrettyTree < Minitest::Test
     assert_equal "\"a\"", PrettyTree.render(["a", nil, nil])
   end
 
+  def test_long_node_values_are_truncated
+    assert_equal "\"morethan...", PrettyTree.render(["morethan10chars"])
+  end
+
   def test_print_writes_render_output_to_stdout_with_trailing_newline
     out, _err = capture_io { PrettyTree.print(["x"]) }
 
