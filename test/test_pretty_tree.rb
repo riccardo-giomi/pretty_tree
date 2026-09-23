@@ -3,6 +3,11 @@
 require "test_helper"
 
 class TestPrettyTree < Minitest::Test
+  class HashAdapterStub
+    def value(node) = node[:label]
+    def children(node) = node[:kids]
+  end
+
   class ReverseFormatterStub
     def label(value, max_width: nil) = value.to_s.reverse
   end
@@ -28,11 +33,11 @@ class TestPrettyTree < Minitest::Test
     assert_equal "\"x\"\n", out
   end
 
-  def test_print_forwards_formatter_arguments
-    tree = ["cat", nil, nil]
+  def test_print_forwards_adapter_and_formatter_arguments
+    tree = {label: "cat", kids: []}
 
     out, _err = capture_io do
-      PrettyTree.print(tree, formatter: ReverseFormatterStub.new)
+      PrettyTree.print(tree, adapter: HashAdapterStub.new, formatter: ReverseFormatterStub.new)
     end
 
     assert_equal "tac\n", out
