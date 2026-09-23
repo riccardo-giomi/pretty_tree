@@ -7,7 +7,17 @@ class TestPrettyTree < Minitest::Test
     refute_nil ::PrettyTree::VERSION
   end
 
-  def test_it_does_something_useful
-    assert false
+  def test_renders_nil_as_empty_string
+    assert_equal "", PrettyTree.render(nil)
+  end
+
+  def test_renders_single_node_as_string
+    assert_equal "\"a\"", PrettyTree.render(["a", nil, nil])
+  end
+
+  def test_print_writes_render_output_to_stdout_with_trailing_newline
+    out, _err = capture_io { PrettyTree.print(["x"]) }
+
+    assert_equal "\"x\"\n", out
   end
 end
