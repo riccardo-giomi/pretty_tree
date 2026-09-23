@@ -7,16 +7,13 @@ require_relative "pretty_tree/adapter/array_tree"
 require_relative "pretty_tree/formatter"
 require_relative "pretty_tree/formatter/default"
 
+require_relative "pretty_tree/renderer"
+
 module PrettyTree
   class Error < StandardError; end
 
   def self.render(tree, adapter: Adapter::ArrayTree.new, formatter: Formatter::Default.new)
-    return "" if tree.nil?
-
-    label = adapter.value(tree)
-    _children = adapter.children(tree)
-
-    formatter.label(label, max_width: 12)
+    Renderer.new(adapter:, formatter:).box_for(tree).join("\n")
   end
 
   def self.print(tree, adapter: Adapter::ArrayTree.new, formatter: Formatter::Default.new)
