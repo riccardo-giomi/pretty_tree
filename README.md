@@ -1,39 +1,98 @@
 # PrettyTree
 
-TODO: Delete this and the text below, and describe your gem
+Pretty-print tree-shaped data as readable ASCII diagrams — for `#inspect` output, log lines, or debugging.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/pretty_tree`. To experiment with that code, run `bin/console` for an interactive prompt.
+```ascii
+   "a"
+   / \
+  /   \
+"b"   "c"
+     /
+    /
+  "d"
+```
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
-
-Install the gem and add to the application's Gemfile by executing:
-
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add pretty_tree
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Or, without Bundler:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install pretty_tree
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Out of the box, PrettyTree understands nested arrays, where each node is
+`[value, *children]` and `nil` marks an empty child slot:
+
+```ruby
+require "pretty_tree"
+
+tree = ["a", ["b", nil, nil], ["c", ["d", nil, nil], nil]]
+
+PrettyTree.print(tree)
+# =>
+#    "a"
+#    / \
+#   /   \
+# "b"   "c"
+#      /
+#     /
+#   "d"
+```
+
+`PrettyTree.render(tree)` returns the diagram as a `String` instead of printing
+it, for use in `#inspect` or logging:
+
+```ruby
+def inspect
+  PrettyTree.render(self)
+end
+```
+
+### Custom node types
+
+Any tree shape can be rendered by providing an `Adapter` — an object that knows how to read a node's value and children:
+
+```ruby
+class MyAdapter < PrettyTree::Adapter
+  def value(node) = node.name
+  def children(node) = node.kids # nil entries mark empty slots
+end
+
+PrettyTree.render(my_tree, adapter: MyAdapter.new)
+```
+
+A `Formatter` controls how a value is turned into a label (defaults to `#inspect`):
+
+```ruby
+class MyFormatter < PrettyTree::Formatter
+  def call(value) = value.to_s.upcase
+end
+
+PrettyTree.render(my_tree, formatter: MyFormatter.new)
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run
+`rake test` to run the tests. You can also run `bin/console` for an interactive
+prompt.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`. To
+release a new version, update the version number in `version.rb`, then run
+`bundle exec rake release`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/pretty_tree.
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/riccardo-giomi/pretty_tree.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the
+[MIT License](https://opensource.org/licenses/MIT).
