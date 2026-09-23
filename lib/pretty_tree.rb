@@ -13,7 +13,7 @@ module PrettyTree
     formatter.label(tree.first, max_width: 12)
   end
 
-  def self.print(tree)
-    puts render(tree)
+  def self.print(tree, formatter: Formatter::Default.new)
+    puts render(tree, formatter:)
   end
 end

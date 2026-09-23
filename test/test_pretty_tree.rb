@@ -3,6 +3,10 @@
 require "test_helper"
 
 class TestPrettyTree < Minitest::Test
+  class ReverseFormatterStub
+    def label(value, max_width: nil) = value.to_s.reverse
+  end
+
   def test_that_it_has_a_version_number
     refute_nil ::PrettyTree::VERSION
   end
@@ -21,7 +25,16 @@ class TestPrettyTree < Minitest::Test
 
   def test_print_writes_render_output_to_stdout_with_trailing_newline
     out, _err = capture_io { PrettyTree.print(["x"]) }
-
     assert_equal "\"x\"\n", out
+  end
+
+  def test_print_forwards_formatter_arguments
+    tree = ["cat", nil, nil]
+
+    out, _err = capture_io do
+      PrettyTree.print(tree, formatter: ReverseFormatterStub.new)
+    end
+
+    assert_equal "tac\n", out
   end
 end
