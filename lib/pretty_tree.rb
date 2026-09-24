@@ -13,7 +13,7 @@ module PrettyTree
   class Error < StandardError; end
 
   def self.render(tree, adapter: Adapter::ArrayTree.new, formatter: Formatter::Default.new)
-    Renderer.new(adapter:, formatter:).box_for(tree).join("\n")
+    Renderer.new(adapter:, formatter:).box_for(tree).lines.join("\n")
   end
 
   def self.print(tree, adapter: Adapter::ArrayTree.new, formatter: Formatter::Default.new)
