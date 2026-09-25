@@ -17,8 +17,6 @@ module PrettyTree
     def self.node_box(label, child_boxes, parent_arity:)
       return leaf_box(label, parent_arity:) if child_boxes.all?(&:empty?)
 
-      return Box.new(lines: [" 1 ", " | ", " | ", " 2 "], width: 3, anchor: 1, empty: false) if child_boxes.size == 1
-
       layout = layout_for(child_boxes)
 
       lines, width, offsets = layout.merge
@@ -81,32 +79,6 @@ module PrettyTree
         line[label_start, label.length] = label
         line
       end
-    end
-
-    class Unary < Base
-      # Spoiler for later dev loops
-      # def label_anchor(offsets)
-      #   offsets.first
-      # end
-    end
-
-    class Binary < Base
-      def label_anchor(offsets)
-        (offsets.last - offsets.first) - 1
-      end
-
-      def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
-        lines = Array.new(2) { " " * width }
-
-        unless boxes.first.empty?
-          lines = render_left_branch(lines, parent_label, parent_anchor, offsets)
-        end
-        unless boxes.last.empty?
-          lines = render_right_branch(lines, parent_label, parent_anchor, offsets)
-        end
-
-        lines
-      end
 
       def render_left_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.first
@@ -124,6 +96,13 @@ module PrettyTree
         lines
       end
 
+      def render_middle_branch(lines, anchor)
+        lines[0][anchor] = "|"
+        lines[1][anchor] = "|"
+
+        lines
+      end
+
       def render_right_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.last
         last_parent_label_char = parent_anchor + parent_label.length / 2
@@ -135,6 +114,41 @@ module PrettyTree
           lines[0][anchor - 2] = "\\"
         end
         lines[1][anchor - 1] = "\\"
+
+        lines
+      end
+    end
+
+    class Unary < Base
+      def label_anchor(offsets)
+        offsets.first
+      end
+
+      def render_connector_lines(_parent_label, _parent_anchor, boxes, offsets, width)
+        lines = Array.new(2) { " " * width }
+
+        unless boxes.first.empty?
+          lines = render_middle_branch(lines, offsets.first)
+        end
+
+        lines
+      end
+    end
+
+    class Binary < Base
+      def label_anchor(offsets)
+        (offsets.last - offsets.first) - 1
+      end
+
+      def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
+        lines = Array.new(2) { " " * width }
+
+        unless boxes.first.empty?
+          lines = render_left_branch(lines, parent_label, parent_anchor, offsets)
+        end
+        unless boxes.last.empty?
+          lines = render_right_branch(lines, parent_label, parent_anchor, offsets)
+        end
 
         lines
       end
