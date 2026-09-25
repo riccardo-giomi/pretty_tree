@@ -89,6 +89,82 @@ class RendererTest < Minitest::Test
     assert_equal [[1, 5]], formatter.calls
   end
 
+  def test_box_for_nil_sibling_of_two_is_binary_leaf_wide
+    box = array_renderer.box_for(nil, arity: 2)
+
+    assert_equal ["     "], box.lines
+    assert_equal 5, box.width
+    assert box.empty?
+  end
+
+  def test_box_for_leaf_sibling_of_two_is_padded_to_binary_leaf_size
+    box = array_renderer.box_for([1], arity: 2)
+
+    assert_equal ["  1  "], box.lines
+    assert_equal 5, box.width
+    assert_equal 2, box.anchor
+  end
+
+  def test_box_for_leaf_sibling_of_three_is_padded_to_min_leaf_size
+    box = array_renderer.box_for([1], arity: 3)
+
+    assert_equal [" 1 "], box.lines
+    assert_equal 3, box.width
+  end
+
+  def test_box_for_leaf_with_two_nil_children_is_padded_for_its_own_arity
+    box = array_renderer.box_for([1, nil, nil], arity: 1)
+
+    assert_equal [" 1 "], box.lines
+  end
+
+  def test_box_for_binary_node_lays_out_label_connectors_and_children
+    box = array_renderer.box_for([1, [2], [3]])
+
+    assert_equal ["     1     ", "    / \\    ", "   /   \\   ", "  2     3  "], box.lines
+    assert_equal 11, box.width
+    assert_equal 5, box.anchor
+  end
+
+  def test_box_for_binary_node_with_a_nil_child
+    box = array_renderer.box_for([1, [2], nil])
+
+    assert_equal ["     1     ", "    /      ", "   /       ", "  2        "], box.lines
+  end
+
+  def test_box_for_binary_node_with_only_nil_children_is_a_leaf
+    box = array_renderer.box_for([1, nil, nil])
+
+    assert_equal [" 1 "], box.lines
+  end
+
+  def test_box_for_nested_binary_nodes
+    box = array_renderer.box_for([1, [2, [4], [5]], [3, [6], [7]]])
+
+    assert_equal [
+      "           1           ",
+      "       ____|____       ",
+      "      /         \\      ",
+      "     2           3     ",
+      "    / \\         / \\    ",
+      "   /   \\       /   \\   ",
+      "  4     5     6     7  "
+    ], box.lines
+  end
+
+  def test_box_for_passes_the_number_of_siblings_down_as_arity
+    box = array_renderer.box_for([1, [2], [3]])
+
+    assert_equal "  2     3  ", box.lines.last
+  end
+
+  def test_box_for_visits_the_node_before_its_children_left_to_right
+    formatter = RecordingFormatterStub.new
+    PrettyTree::Renderer.new(adapter: ArrayAdapterStub.new, formatter:).box_for([1, [2, [4], [5]], [3]])
+
+    assert_equal [1, 2, 4, 5, 3], formatter.calls.map(&:first)
+  end
+
   def test_box_for_nil_does_not_ask_formatter_for_a_label
     formatter = RecordingFormatterStub.new
     PrettyTree::Renderer.new(adapter: ArrayAdapterStub.new, formatter:).box_for(nil)
