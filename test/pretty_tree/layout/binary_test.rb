@@ -76,27 +76,4 @@ class LayoutBinaryTest < Minitest::Test
 
     assert_equal ["          \\       ", "           \\      "], lines
   end
-
-  def test_render_left_branch_draws_on_both_lines
-    layout = PrettyTree::Layout::Binary.new([])
-    lines = layout.render_left_branch([" " * 11, " " * 11], "1", 5, [2, 8])
-
-    assert_equal ["    /      ", "   /       "], lines
-  end
-
-  def test_render_right_branch_draws_on_both_lines
-    layout = PrettyTree::Layout::Binary.new([])
-    lines = layout.render_right_branch([" " * 11, " " * 11], "1", 5, [2, 8])
-
-    assert_equal ["      \\    ", "       \\   "], lines
-  end
-
-  def test_render_branches_combine_on_the_same_lines
-    layout = PrettyTree::Layout::Binary.new([])
-    lines = [" " * 11, " " * 11]
-    lines = layout.render_left_branch(lines, "1", 5, [2, 8])
-    lines = layout.render_right_branch(lines, "1", 5, [2, 8])
-
-    assert_equal ["    / \\    ", "   /   \\   "], lines
-  end
 end

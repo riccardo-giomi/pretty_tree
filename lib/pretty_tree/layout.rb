@@ -17,11 +17,13 @@ module PrettyTree
     def self.node_box(label, child_boxes, parent_arity:)
       return leaf_box(label, parent_arity:) if child_boxes.all?(&:empty?)
 
+      label = pad_label(label, parent_arity:)
       layout = layout_for(child_boxes)
 
       lines, width, offsets = layout.merge
 
       anchor = layout.label_anchor(offsets)
+      lines, width, offsets, anchor = layout.accommodate_parent_label(lines, width, offsets, anchor, label.length)
 
       label_line = layout.render_label_line(label, width, anchor)
       connector_lines = layout.render_connector_lines(label, anchor, child_boxes, offsets, width)
@@ -80,9 +82,26 @@ module PrettyTree
         line
       end
 
+      # Ensures that the box created by merging the children subtrees is not
+      # smaller than the parent label, including the fact that the label does not
+      # start from the beginning of its line.
+      def accommodate_parent_label(lines, width, offsets, anchor, label_length)
+        label_left = label_length / 2
+        label_right = label_length - label_left
+
+        left_pad = [label_left - anchor, 0].max
+        anchor += left_pad
+        right_pad = [anchor + label_right - (width + left_pad), 0].max
+
+        return [lines, width, offsets, anchor] if left_pad.zero? && right_pad.zero?
+
+        lines = lines.map { |line| (" " * left_pad) + line + (" " * right_pad) }
+        [lines, width + left_pad + right_pad, offsets.map { |o| o + left_pad }, anchor]
+      end
+
       def render_left_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.first
-        first_parent_label_char = parent_anchor - parent_label.length / 2
+        first_parent_label_char = parent_anchor - parent_label.strip.length / 2
         labels_distance = first_parent_label_char - (anchor + 2)
         anchors_distance = parent_anchor - (anchor + 2)
 
@@ -105,7 +124,7 @@ module PrettyTree
 
       def render_right_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.last
-        last_parent_label_char = parent_anchor + parent_label.length / 2
+        last_parent_label_char = parent_anchor + parent_label.strip.length / 2
         anchors_distance = anchor - 2 - parent_anchor
         labels_distance = (anchor - 2) - last_parent_label_char
         if labels_distance > 1
@@ -127,9 +146,7 @@ module PrettyTree
       def render_connector_lines(_parent_label, _parent_anchor, boxes, offsets, width)
         lines = Array.new(2) { " " * width }
 
-        unless boxes.first.empty?
-          lines = render_middle_branch(lines, offsets.first)
-        end
+        lines = render_middle_branch(lines, offsets.first) unless boxes.first.empty?
 
         lines
       end
@@ -143,22 +160,27 @@ module PrettyTree
       def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
         lines = Array.new(2) { " " * width }
 
-        unless boxes.first.empty?
-          lines = render_left_branch(lines, parent_label, parent_anchor, offsets)
-        end
-        unless boxes.last.empty?
-          lines = render_right_branch(lines, parent_label, parent_anchor, offsets)
-        end
+        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless boxes.first.empty?
+        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless boxes.last.empty?
 
         lines
       end
     end
 
     class Ternary < Base
-      # Spoiler for later dev loops
-      #   def label_anchor(offsets)
-      #     offsets[1]
-      #   end
+      def label_anchor(offsets)
+        offsets[1]
+      end
+
+      def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
+        lines = Array.new(2) { " " * width }
+
+        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless boxes.first.empty?
+        lines = render_middle_branch(lines, offsets[1]) unless boxes[1].empty?
+        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless boxes.last.empty?
+
+        lines
+      end
     end
 
     class Generic < Base

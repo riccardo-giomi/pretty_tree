@@ -140,6 +140,169 @@ class TestPrettyTree < Minitest::Test
     assert_equal render_lines(expected_lines), PrettyTree.render(tree)
   end
 
+  def test_renders_a_chain_of_single_children
+    expected_lines = [
+      " 1 ",
+      " | ",
+      " | ",
+      " 2 ",
+      " | ",
+      " | ",
+      " 3 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3]]])
+  end
+
+  def test_renders_a_single_child_with_two_children_of_its_own
+    expected_lines = [
+      "     1     ",
+      "     |     ",
+      "     |     ",
+      "     2     ",
+      "    / \\    ",
+      "   /   \\   ",
+      "  3     4  "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, nil, nil], [4, nil, nil]]])
+  end
+
+  def test_renders_a_full_ternary_tree
+    expected_lines = [
+      "     1     ",
+      "   __|__   ",
+      "  /  |  \\  ",
+      " 2   3   4 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, nil, nil, nil], [3, nil, nil, nil], [4, nil, nil, nil]])
+  end
+
+  def test_renders_a_ternary_tree_with_only_a_middle_child
+    expected_lines = [
+      "     1     ",
+      "     |     ",
+      "     |     ",
+      "     3     "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, nil, [3, nil, nil, nil], nil])
+  end
+
+  def test_renders_a_ternary_tree_without_a_middle_child
+    expected_lines = [
+      "     1     ",
+      "   __|__   ",
+      "  /     \\  ",
+      " 2       4 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, nil, nil, nil], nil, [4, nil, nil, nil]])
+  end
+
+  def test_renders_a_tree_mixing_one_two_and_three_children
+    expected_lines = [
+      "         1                 ",
+      "   ______|__________       ",
+      "  /      |          \\      ",
+      " 2       3           4     ",
+      " |     __|__        / \\    ",
+      " |    /  |  \\      /   \\   ",
+      " 5   6   7   8    9    10  "
+    ]
+    tree = [1, [2, [5]], [3, [6], [7], [8]], [4, [9], [10]]]
+
+    assert_equal render_lines(expected_lines), PrettyTree.render(tree)
+  end
+
+  def test_renders_a_label_wider_than_its_single_child
+    expected_lines = [
+      "123456789012",
+      "      |     ",
+      "      |     ",
+      "      1     "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([123456789012, [1]])
+  end
+
+  def test_renders_a_label_wider_than_its_two_children
+    expected_lines = [
+      "123456789012",
+      "     / \\    ",
+      "    /   \\   ",
+      "   1     2  "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([123456789012, [1], [2]])
+  end
+
+  def test_renders_a_label_wider_than_its_three_children
+    expected_lines = [
+      "123456789012",
+      "    / | \\   ",
+      "   /  |  \\  ",
+      "  1   2   3 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([123456789012, [1], [2], [3]])
+  end
+
+  def test_renders_a_wide_label_with_an_odd_number_of_characters
+    expected_lines = [
+      "  1234567  ",
+      "   / | \\   ",
+      "  /  |  \\  ",
+      " 1   2   3 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1234567, [1], [2], [3]])
+  end
+
+  def test_renders_a_wide_label_on_a_missing_child_side
+    expected_lines = [
+      "123456789012",
+      "     /      ",
+      "    /       ",
+      "   1        "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([123456789012, [1], nil])
+  end
+
+  def test_renders_a_wide_label_deeper_in_the_tree
+    expected_lines = [
+      "        1         ",
+      "        |_____    ",
+      "       /      \\   ",
+      "123456789012   4  ",
+      "     / \\          ",
+      "    /   \\         ",
+      "   2     3        "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [123456789012, [2], [3]], [4]])
+  end
+
+  def test_renders_two_children_that_each_have_a_single_child
+    expected_lines = [
+      "     1     ",
+      "    / \\    ",
+      "   /   \\   ",
+      "  2     4  ",
+      "  |     |  ",
+      "  |     |  ",
+      "  3     5  "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3]], [4, [5]]])
+  end
+
+  def test_renders_two_children_with_single_children_of_different_heights
+    expected_lines = [
+      "     1     ",
+      "    / \\    ",
+      "   /   \\   ",
+      "  2     5  ",
+      "  |     |  ",
+      "  |     |  ",
+      "  3     6  ",
+      "  |        ",
+      "  |        ",
+      "  4        "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, [4]]], [5, [6]]])
+  end
+
   def test_render_pads_every_line_to_the_same_width
     tree = [1, [2, [4, nil, nil], nil], [3, nil, [5, nil, nil]]]
     widths = PrettyTree.render(tree).lines.map { |line| line.chomp.size }

@@ -218,6 +218,109 @@ class LayoutTest < Minitest::Test
     assert_equal ["            1            ", "        ____|_____       ", "       /          \\      ", "wwwwwwwwwwww vvvvvvvvvvvv"], box.lines
   end
 
+  def test_node_box_of_a_unary_node_draws_a_straight_bar_to_its_child
+    box = PrettyTree::Layout.node_box("1", [PrettyTree::Layout.leaf_box("2", parent_arity: 1)], parent_arity: 1)
+
+    assert_equal [" 1 ", " | ", " | ", " 2 "], box.lines
+  end
+
+  def test_node_box_of_a_unary_node_has_its_childs_width_and_anchor
+    box = PrettyTree::Layout.node_box("1", [PrettyTree::Layout.leaf_box("2", parent_arity: 1)], parent_arity: 1)
+
+    assert_equal 3, box.width
+    assert_equal 1, box.anchor
+    refute box.empty?
+  end
+
+  def test_node_box_of_a_unary_node_with_a_wide_child
+    child = PrettyTree::Layout.leaf_box("w" * 12, parent_arity: 1)
+    box = PrettyTree::Layout.node_box("1", [child], parent_arity: 1)
+
+    assert_equal ["      1     ", "      |     ", "      |     ", "wwwwwwwwwwww"], box.lines
+    assert_equal 6, box.anchor
+  end
+
+  def test_node_box_of_a_unary_node_stacks_on_a_taller_child
+    tall = PrettyTree::Box.new(["  2  ", " / \\ ", "  4  "], 5, 2, false)
+    box = PrettyTree::Layout.node_box("1", [tall], parent_arity: 1)
+
+    assert_equal ["  1  ", "  |  ", "  |  ", "  2  ", " / \\ ", "  4  "], box.lines
+  end
+
+  def test_node_box_of_a_unary_node_does_not_depend_on_its_own_parent_arity
+    child = PrettyTree::Layout.leaf_box("2", parent_arity: 1)
+
+    assert_equal PrettyTree::Layout.node_box("1", [child], parent_arity: 1).lines,
+      PrettyTree::Layout.node_box("1", [child], parent_arity: 3).lines
+  end
+
+  def test_node_box_of_a_ternary_node_draws_label_connectors_and_children
+    children = %w[2 3 4].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 3) }
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal ["     1     ", "   __|__   ", "  /  |  \\  ", " 2   3   4 "], box.lines
+  end
+
+  def test_node_box_of_a_ternary_node_has_the_merged_width_and_middle_anchor
+    children = %w[2 3 4].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 3) }
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal 11, box.width
+    assert_equal 5, box.anchor
+    assert_equal 4, box.height
+  end
+
+  def test_node_box_of_a_ternary_node_with_only_a_middle_child
+    children = [PrettyTree::Layout.empty_box(parent_arity: 3), PrettyTree::Layout.leaf_box("3", parent_arity: 3), PrettyTree::Layout.empty_box(parent_arity: 3)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal ["     1     ", "     |     ", "     |     ", "     3     "], box.lines
+  end
+
+  def test_node_box_of_a_ternary_node_without_a_middle_child
+    children = [PrettyTree::Layout.leaf_box("2", parent_arity: 3), PrettyTree::Layout.empty_box(parent_arity: 3), PrettyTree::Layout.leaf_box("4", parent_arity: 3)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal ["     1     ", "   __|__   ", "  /     \\  ", " 2       4 "], box.lines
+  end
+
+  def test_node_box_widens_to_fit_a_label_wider_than_its_children
+    children = %w[1 2].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 2) }
+    box = PrettyTree::Layout.node_box("123456789012", children, parent_arity: 1)
+
+    assert_equal ["123456789012", "     / \\    ", "    /   \\   ", "   1     2  "], box.lines
+    assert_equal 12, box.width
+    assert_equal 6, box.anchor
+  end
+
+  def test_node_box_of_a_unary_node_widens_to_fit_a_wide_label
+    child = PrettyTree::Layout.leaf_box("1", parent_arity: 1)
+    box = PrettyTree::Layout.node_box("123456789012", [child], parent_arity: 1)
+
+    assert_equal ["123456789012", "      |     ", "      |     ", "      1     "], box.lines
+    assert_equal 6, box.anchor
+  end
+
+  def test_node_box_of_a_ternary_node_widens_to_fit_a_wide_label
+    children = %w[1 2 3].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 3) }
+    box = PrettyTree::Layout.node_box("123456789012", children, parent_arity: 1)
+
+    assert_equal ["123456789012", "    / | \\   ", "   /  |  \\  ", "  1   2   3 "], box.lines
+  end
+
+  def test_node_box_with_a_wide_label_has_lines_of_equal_width
+    children = %w[1 2].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 2) }
+    box = PrettyTree::Layout.node_box("123456789012", children, parent_arity: 1)
+
+    assert_equal [box.width], box.lines.map(&:size).uniq
+  end
+
+  def test_node_box_does_not_widen_when_the_label_fits
+    children = %w[1 2].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 2) }
+
+    assert_equal 11, PrettyTree::Layout.node_box("123", children, parent_arity: 1).width
+  end
+
   def boxes(count)
     Array.new(count) { PrettyTree::Layout.empty_box(parent_arity: count) }
   end

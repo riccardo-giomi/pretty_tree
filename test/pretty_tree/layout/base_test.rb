@@ -103,4 +103,154 @@ class LayoutBaseTest < Minitest::Test
   def test_render_label_line_at_the_left_edge
     assert_equal "ab   ", layout.render_label_line("ab", 5, 1)
   end
+
+  def test_accommodate_parent_label_leaves_children_alone_when_the_label_fits
+    lines = [" a ", " | "]
+    result = layout.accommodate_parent_label(lines, 3, [1], 1, 3)
+
+    assert_same lines, result[0]
+    assert_equal [3, [1], 1], result[1..]
+  end
+
+  def test_accommodate_parent_label_leaves_children_alone_for_a_one_character_label
+    result = layout.accommodate_parent_label([" a "], 3, [1], 1, 1)
+
+    assert_equal [[" a "], 3, [1], 1], result
+  end
+
+  def test_accommodate_parent_label_leaves_children_alone_for_an_empty_label
+    result = layout.accommodate_parent_label([" a "], 3, [1], 1, 0)
+
+    assert_equal [[" a "], 3, [1], 1], result
+  end
+
+  def test_accommodate_parent_label_pads_the_left_when_the_label_sticks_out_on_the_left
+    result = layout.accommodate_parent_label(["x  "], 3, [0], 0, 3)
+
+    assert_equal [[" x  "], 4, [1], 1], result
+  end
+
+  def test_accommodate_parent_label_pads_the_right_when_the_label_sticks_out_on_the_right
+    result = layout.accommodate_parent_label(["  x"], 3, [2], 2, 5)
+
+    assert_equal [["  x  "], 5, [2], 2], result
+  end
+
+  def test_accommodate_parent_label_pads_both_sides_of_a_much_wider_label
+    result = layout.accommodate_parent_label(["a b", "c d"], 3, [0, 2], 1, 7)
+
+    assert_equal [["  a b  ", "  c d  "], 7, [2, 4], 3], result
+  end
+
+  def test_accommodate_parent_label_pads_every_line_the_same
+    lines, width, = layout.accommodate_parent_label(["a  ", "bb ", "ccc"], 3, [0], 0, 9)
+
+    assert_equal 9, width
+    assert_equal ["    a    ", "    bb   ", "    ccc  "], lines
+  end
+
+  def test_accommodate_parent_label_shifts_every_offset_by_the_left_padding
+    _, _, offsets, = layout.accommodate_parent_label(["a b c"], 5, [0, 2, 4], 2, 9)
+
+    assert_equal [2, 4, 6], offsets
+  end
+
+  def test_accommodate_parent_label_shifts_the_anchor_by_the_left_padding
+    _, _, _, anchor = layout.accommodate_parent_label(["a b"], 3, [0, 2], 1, 7)
+
+    assert_equal 3, anchor
+  end
+
+  def test_accommodate_parent_label_keeps_the_anchor_when_nothing_is_padded_on_the_left
+    _, _, _, anchor = layout.accommodate_parent_label(["  x"], 3, [2], 2, 5)
+
+    assert_equal 2, anchor
+  end
+
+  def test_accommodate_parent_label_pads_even_and_odd_labels_of_similar_width_differently
+    even = layout.accommodate_parent_label(["a b"], 3, [0, 2], 1, 4)
+    odd = layout.accommodate_parent_label(["a b"], 3, [0, 2], 1, 5)
+
+    assert_equal [[" a b"], 4, [1, 3], 2], even
+    assert_equal [[" a b "], 5, [1, 3], 2], odd
+  end
+
+  def test_accommodate_parent_label_never_shrinks_the_children
+    lines, width, = layout.accommodate_parent_label(["a   b"], 5, [0, 4], 2, 1)
+
+    assert_equal ["a   b"], lines
+    assert_equal 5, width
+  end
+
+  def test_accommodate_parent_label_does_not_modify_the_lines_it_was_given
+    lines = ["a b"]
+    layout.accommodate_parent_label(lines, 3, [0, 2], 1, 7)
+
+    assert_equal ["a b"], lines
+  end
+
+  def blank_lines(width)
+    [" " * width, " " * width]
+  end
+
+  def test_render_left_branch_draws_on_both_lines
+    lines = layout.render_left_branch(blank_lines(11), "1", 5, [2, 8])
+
+    assert_equal ["    /      ", "   /       "], lines
+  end
+
+  def test_render_left_branch_of_far_child_uses_underscores_up_to_the_anchor
+    lines = layout.render_left_branch(blank_lines(25), "1", 12, [6, 19])
+
+    assert_equal ["        ____|            ", "       /                 "], lines
+  end
+
+  def test_render_left_branch_returns_the_lines_it_was_given
+    lines = blank_lines(11)
+
+    assert_same lines, layout.render_left_branch(lines, "1", 5, [2, 8])
+  end
+
+  def test_render_right_branch_draws_on_both_lines
+    lines = layout.render_right_branch(blank_lines(11), "1", 5, [2, 8])
+
+    assert_equal ["      \\    ", "       \\   "], lines
+  end
+
+  def test_render_right_branch_of_far_child_uses_underscores_from_the_anchor
+    lines = layout.render_right_branch(blank_lines(25), "1", 12, [6, 19])
+
+    assert_equal ["            |_____       ", "                  \\      "], lines
+  end
+
+  def test_render_right_branch_returns_the_lines_it_was_given
+    lines = blank_lines(11)
+
+    assert_same lines, layout.render_right_branch(lines, "1", 5, [2, 8])
+  end
+
+  def test_render_left_and_right_branches_combine_on_the_same_lines
+    lines = layout.render_left_branch(blank_lines(11), "1", 5, [2, 8])
+    lines = layout.render_right_branch(lines, "1", 5, [2, 8])
+
+    assert_equal ["    / \\    ", "   /   \\   "], lines
+  end
+
+  def test_render_middle_branch_draws_a_bar_on_both_lines
+    assert_equal ["  |  ", "  |  "], layout.render_middle_branch(blank_lines(5), 2)
+  end
+
+  def test_render_middle_branch_returns_the_lines_it_was_given
+    lines = blank_lines(5)
+
+    assert_same lines, layout.render_middle_branch(lines, 2)
+  end
+
+  def test_render_middle_branch_combines_with_side_branches
+    lines = layout.render_left_branch(blank_lines(11), "1", 5, [1, 9])
+    lines = layout.render_middle_branch(lines, 5)
+    lines = layout.render_right_branch(lines, "1", 5, [1, 9])
+
+    assert_equal ["   __|__   ", "  /  |  \\  "], lines
+  end
 end

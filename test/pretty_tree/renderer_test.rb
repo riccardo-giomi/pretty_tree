@@ -152,6 +152,68 @@ class RendererTest < Minitest::Test
     ], box.lines
   end
 
+  def test_box_for_unary_node_lays_out_label_bar_and_child
+    box = array_renderer.box_for([1, [2]])
+
+    assert_equal [" 1 ", " | ", " | ", " 2 "], box.lines
+    assert_equal 3, box.width
+    assert_equal 1, box.anchor
+  end
+
+  def test_box_for_unary_node_with_a_nil_child_is_a_leaf
+    assert_equal [" 1 "], array_renderer.box_for([1, nil]).lines
+  end
+
+  def test_box_for_chain_of_unary_nodes
+    box = array_renderer.box_for([1, [2, [3]]])
+
+    assert_equal [" 1 ", " | ", " | ", " 2 ", " | ", " | ", " 3 "], box.lines
+  end
+
+  def test_box_for_only_child_leaf_is_padded_to_min_leaf_size
+    box = array_renderer.box_for([1, [2]])
+
+    assert_equal " 2 ", box.lines.last
+  end
+
+  def test_box_for_ternary_node_lays_out_label_connectors_and_children
+    box = array_renderer.box_for([1, [2], [3], [4]])
+
+    assert_equal ["     1     ", "   __|__   ", "  /  |  \\  ", " 2   3   4 "], box.lines
+    assert_equal 11, box.width
+    assert_equal 5, box.anchor
+  end
+
+  def test_box_for_ternary_node_with_a_nil_middle_child
+    box = array_renderer.box_for([1, [2], nil, [4]])
+
+    assert_equal ["     1     ", "   __|__   ", "  /     \\  ", " 2       4 "], box.lines
+  end
+
+  def test_box_for_ternary_node_with_only_a_middle_child
+    box = array_renderer.box_for([1, nil, [3], nil])
+
+    assert_equal ["     1     ", "     |     ", "     |     ", "     3     "], box.lines
+  end
+
+  def test_box_for_ternary_node_with_only_nil_children_is_a_leaf
+    assert_equal [" 1 "], array_renderer.box_for([1, nil, nil, nil]).lines
+  end
+
+  def test_box_for_mixed_unary_binary_and_ternary_nodes
+    box = array_renderer.box_for([1, [2, [5]], [3, [6], [7], [8]], [4, [9], [10]]])
+
+    assert_equal [
+      "         1                 ",
+      "   ______|__________       ",
+      "  /      |          \\      ",
+      " 2       3           4     ",
+      " |     __|__        / \\    ",
+      " |    /  |  \\      /   \\   ",
+      " 5   6   7   8    9    10  "
+    ], box.lines
+  end
+
   def test_box_for_passes_its_child_count_down_as_parent_arity
     box = array_renderer.box_for([1, [2], [3]])
 
