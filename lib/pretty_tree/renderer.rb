@@ -12,6 +12,8 @@ module PrettyTree
       @max_width = max_width
     end
 
+    def call(tree) = box_for(tree).lines.join("\n")
+
     def box_for(node, parent_arity: 1)
       return Layout.empty_box(parent_arity:) if node.nil?
 

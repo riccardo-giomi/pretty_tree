@@ -54,6 +54,16 @@ def inspect
 end
 ```
 
+### Preview
+
+`PrettyTree.preview` will print a collection of example trees as a preview, call it from `irb` or a script:
+
+```ruby
+require "pretty_tree"
+
+PrettyTree.preview
+```
+
 ### Custom node types
 
 Any tree shape can be rendered by providing an `Adapter` — an object that knows how to read a node's value and children:
@@ -86,6 +96,8 @@ prompt.
 To install this gem onto your local machine, run `bundle exec rake install`. To
 release a new version, update the version number in `version.rb`, then run
 `bundle exec rake release`.
+
+`rake preview` will call `PrintTree.preview`.
 
 ## Contributing
 
