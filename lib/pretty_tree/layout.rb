@@ -101,7 +101,7 @@ module PrettyTree
 
       def render_left_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.first
-        first_parent_label_char = parent_anchor - parent_label.strip.length / 2
+        first_parent_label_char = parent_anchor - parent_label.length / 2
         labels_distance = first_parent_label_char - (anchor + 2)
         anchors_distance = parent_anchor - (anchor + 2)
 
@@ -124,7 +124,7 @@ module PrettyTree
 
       def render_right_branch(lines, parent_label, parent_anchor, offsets)
         anchor = offsets.last
-        last_parent_label_char = parent_anchor + parent_label.strip.length / 2
+        last_parent_label_char = parent_anchor + parent_label.length / 2
         anchors_distance = anchor - 2 - parent_anchor
         labels_distance = (anchor - 2) - last_parent_label_char
         if labels_distance > 1

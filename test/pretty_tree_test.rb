@@ -169,7 +169,7 @@ class TestPrettyTree < Minitest::Test
   def test_renders_a_full_ternary_tree
     expected_lines = [
       "     1     ",
-      "   __|__   ",
+      "   / | \\   ",
       "  /  |  \\  ",
       " 2   3   4 "
     ]
@@ -189,7 +189,7 @@ class TestPrettyTree < Minitest::Test
   def test_renders_a_ternary_tree_without_a_middle_child
     expected_lines = [
       "     1     ",
-      "   __|__   ",
+      "   /   \\   ",
       "  /     \\  ",
       " 2       4 "
     ]
@@ -202,7 +202,7 @@ class TestPrettyTree < Minitest::Test
       "   ______|__________       ",
       "  /      |          \\      ",
       " 2       3           4     ",
-      " |     __|__        / \\    ",
+      " |     / | \\        / \\    ",
       " |    /  |  \\      /   \\   ",
       " 5   6   7   8    9    10  "
     ]
@@ -301,6 +301,26 @@ class TestPrettyTree < Minitest::Test
       "  4        "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, [4]]], [5, [6]]])
+  end
+
+  def test_renders_a_ternary_tree_of_ternary_trees_with_tight_connectors_everywhere
+    expected_lines = [
+      "                 1                 ",
+      "       __________|__________       ",
+      "      /          |          \\      ",
+      "     2           6          10     ",
+      "   / | \\       / | \\       / | \\   ",
+      "  /  |  \\     /  |  \\     /  |  \\  ",
+      " 3   4   5   7   8   9  11  12  13 "
+    ]
+    tree = [
+      1,
+      [2, [3, nil, nil], [4, nil, nil], [5, nil, nil]],
+      [6, [7, nil, nil], [8, nil, nil], [9, nil, nil]],
+      [10, [11, nil, nil], [12, nil, nil], [13, nil, nil]]
+    ]
+
+    assert_equal render_lines(expected_lines), PrettyTree.render(tree)
   end
 
   def test_render_pads_every_line_to_the_same_width

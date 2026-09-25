@@ -179,7 +179,7 @@ class RendererTest < Minitest::Test
   def test_box_for_ternary_node_lays_out_label_connectors_and_children
     box = array_renderer.box_for([1, [2], [3], [4]])
 
-    assert_equal ["     1     ", "   __|__   ", "  /  |  \\  ", " 2   3   4 "], box.lines
+    assert_equal ["     1     ", "   / | \\   ", "  /  |  \\  ", " 2   3   4 "], box.lines
     assert_equal 11, box.width
     assert_equal 5, box.anchor
   end
@@ -187,7 +187,7 @@ class RendererTest < Minitest::Test
   def test_box_for_ternary_node_with_a_nil_middle_child
     box = array_renderer.box_for([1, [2], nil, [4]])
 
-    assert_equal ["     1     ", "   __|__   ", "  /     \\  ", " 2       4 "], box.lines
+    assert_equal ["     1     ", "   /   \\   ", "  /     \\  ", " 2       4 "], box.lines
   end
 
   def test_box_for_ternary_node_with_only_a_middle_child
@@ -208,7 +208,7 @@ class RendererTest < Minitest::Test
       "   ______|__________       ",
       "  /      |          \\      ",
       " 2       3           4     ",
-      " |     __|__        / \\    ",
+      " |     / | \\        / \\    ",
       " |    /  |  \\      /   \\   ",
       " 5   6   7   8    9    10  "
     ], box.lines

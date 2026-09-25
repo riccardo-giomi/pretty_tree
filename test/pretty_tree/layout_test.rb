@@ -258,7 +258,7 @@ class LayoutTest < Minitest::Test
     children = %w[2 3 4].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 3) }
     box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
-    assert_equal ["     1     ", "   __|__   ", "  /  |  \\  ", " 2   3   4 "], box.lines
+    assert_equal ["     1     ", "   / | \\   ", "  /  |  \\  ", " 2   3   4 "], box.lines
   end
 
   def test_node_box_of_a_ternary_node_has_the_merged_width_and_middle_anchor
@@ -281,7 +281,7 @@ class LayoutTest < Minitest::Test
     children = [PrettyTree::Layout.leaf_box("2", parent_arity: 3), PrettyTree::Layout.empty_box(parent_arity: 3), PrettyTree::Layout.leaf_box("4", parent_arity: 3)]
     box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
-    assert_equal ["     1     ", "   __|__   ", "  /     \\  ", " 2       4 "], box.lines
+    assert_equal ["     1     ", "   /   \\   ", "  /     \\  ", " 2       4 "], box.lines
   end
 
   def test_node_box_widens_to_fit_a_label_wider_than_its_children
@@ -319,6 +319,25 @@ class LayoutTest < Minitest::Test
     children = %w[1 2].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 2) }
 
     assert_equal 11, PrettyTree::Layout.node_box("123", children, parent_arity: 1).width
+  end
+
+  def test_node_box_connectors_of_a_ternary_node_do_not_depend_on_label_length_up_to_the_min_leaf_size
+    connectors = %w[1 22 333].map do |label|
+      children = %w[3 4 5].map { |child| PrettyTree::Layout.leaf_box(child, parent_arity: 3) }
+      PrettyTree::Layout.node_box(label, children, parent_arity: 3).lines[1..2]
+    end
+
+    assert_equal 1, connectors.uniq.size
+    assert_equal ["   / | \\   ", "  /  |  \\  "], connectors.first
+  end
+
+  def test_node_box_connectors_of_a_binary_node_do_not_depend_on_label_length_up_to_the_min_binary_leaf_size
+    connectors = %w[1 22 333 4444 55555].map do |label|
+      children = %w[3 4].map { |child| PrettyTree::Layout.leaf_box(child, parent_arity: 2) }
+      PrettyTree::Layout.node_box(label, children, parent_arity: 2).lines[1..2]
+    end
+
+    assert_equal 1, connectors.uniq.size
   end
 
   def boxes(count)
