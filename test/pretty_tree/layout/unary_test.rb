@@ -15,7 +15,7 @@ class LayoutUnaryTest < Minitest::Test
     layout = PrettyTree::Layout::Unary.new(boxes)
     _, width, offsets = layout.merge
     anchor = layout.label_anchor(offsets)
-    layout.render_connector_lines(label, anchor, boxes, offsets, width)
+    layout.render_connector_lines(label, anchor, offsets, width)
   end
 
   def test_is_a_base_layout

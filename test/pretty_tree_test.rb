@@ -323,6 +323,133 @@ class TestPrettyTree < Minitest::Test
     assert_equal render_lines(expected_lines), PrettyTree.render(tree)
   end
 
+  def test_renders_a_node_with_four_children
+    expected_lines = [
+      "       1       ",
+      "  _____|_____  ",
+      " |   |   |   | ",
+      " 2   3   4   5 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2], [3], [4], [5]])
+  end
+
+  def test_renders_a_node_with_six_children
+    expected_lines = [
+      "           1           ",
+      "  _________|_________  ",
+      " |   |   |   |   |   | ",
+      " 2   3   4   5   6   7 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2], [3], [4], [5], [6], [7]])
+  end
+
+  def test_renders_a_node_with_many_children_ignoring_the_missing_ones
+    expected_lines = [
+      "     1     ",
+      "  ___|___  ",
+      " |   |   | ",
+      " 2   4   6 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2], nil, [4], nil, [6]])
+  end
+
+  def test_renders_a_node_with_many_slots_and_a_single_child
+    expected_lines = [
+      " 1 ",
+      " | ",
+      " | ",
+      " 3 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, nil, [3], nil, nil])
+  end
+
+  def test_renders_a_wide_label_over_four_children
+    expected_lines = [
+      " \"a-very-l...  ",
+      "  _____|_____  ",
+      " |   |   |   | ",
+      " 2   3   4   5 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render(["a-very-long-root-label", [2], [3], [4], [5]])
+  end
+
+  def test_renders_a_node_with_four_children_as_the_left_child_of_a_binary_node
+    expected_lines = [
+      "          1          ",
+      "         /|______    ",
+      "        /        \\   ",
+      "       2          7  ",
+      "  _____|_____        ",
+      " |   |   |   |       ",
+      " 3   4   5   6       "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3], [4], [5], [6]], [7]])
+  end
+
+  def test_renders_a_node_with_four_children_as_the_right_child_of_a_binary_node
+    expected_lines = [
+      "          1          ",
+      "    ______|\\         ",
+      "   /        \\        ",
+      "  7          2       ",
+      "        _____|_____  ",
+      "       |   |   |   | ",
+      "       3   4   5   6 "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [7], [2, [3], [4], [5], [6]]])
+  end
+
+  def test_renders_a_node_with_four_children_as_the_middle_child_of_a_ternary_node
+    expected_lines = [
+      "           1           ",
+      "   ________|________   ",
+      "  /        |        \\  ",
+      " 8         2         9 ",
+      "      _____|_____      ",
+      "     |   |   |   |     ",
+      "     3   4   5   6     "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [8], [2, [3], [4], [5], [6]], [9]])
+  end
+
+  def test_renders_nodes_with_many_children_inside_a_node_with_many_children
+    expected_lines = [
+      "                            1          ",
+      "        ____________________|________  ",
+      "       |               |         |   | ",
+      "       2               7        12  13 ",
+      "  _____|_____     _____|_____          ",
+      " |   |   |   |   |   |   |   |         ",
+      " 3   4   5   6   8   9  10  11         "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3], [4], [5], [6]], [7, [8], [9], [10], [11]], [12], [13]])
+  end
+
+  def test_renders_four_ternary_subtrees_under_one_root
+    expected_lines = [
+      "                    \"root\"                     ",
+      "      _________________|_________________      ",
+      "     |           |           |           |     ",
+      "     1           2           3           4     ",
+      "   / | \\       / | \\       / | \\       / | \\   ",
+      "  /  |  \\     /  |  \\     /  |  \\     /  |  \\  ",
+      "\"a\" \"b\" \"c\" \"a\" \"b\" \"c\" \"a\" \"b\" \"c\" \"a\" \"b\" \"c\"",
+      " |   |   |   |   |   |   |   |   |   |   |   | ",
+      " |   |   |   |   |   |   |   |   |   |   |   | ",
+      "\"A\" \"B\" \"C\" \"A\" \"B\" \"C\" \"A\" \"B\" \"C\" \"A\" \"B\" \"C\""
+    ]
+    tree = ["root", [1, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [2, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [3, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [4, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]]]
+
+    assert_equal render_lines(expected_lines), PrettyTree.render(tree)
+  end
+
+  def test_renders_every_line_of_a_tree_with_many_children_with_the_same_width
+    tree = [1, [2, [3], [4], [5], [6]], [7, [8], nil, [10]], [11], nil, [13]]
+    widths = PrettyTree.render(tree).lines.map { |line| line.chomp.size }
+
+    assert_equal 1, widths.uniq.size
+  end
+
   def test_render_pads_every_line_to_the_same_width
     tree = [1, [2, [4, nil, nil], nil], [3, nil, [5, nil, nil]]]
     widths = PrettyTree.render(tree).lines.map { |line| line.chomp.size }

@@ -340,6 +340,73 @@ class LayoutTest < Minitest::Test
     assert_equal 1, connectors.uniq.size
   end
 
+  def generic_leaf(label)
+    PrettyTree::Layout.leaf_box(label, parent_arity: 4)
+  end
+
+  def generic_empty
+    PrettyTree::Layout.empty_box(parent_arity: 4)
+  end
+
+  def test_node_box_of_a_generic_node_draws_label_connectors_and_children
+    children = %w[2 3 4 5].map { |label| generic_leaf(label) }
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal ["       1       ", "  _____|_____  ", " |   |   |   | ", " 2   3   4   5 "], box.lines
+  end
+
+  def test_node_box_of_a_generic_node_has_the_merged_width_and_label_anchor
+    children = %w[2 3 4 5].map { |label| generic_leaf(label) }
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal 15, box.width
+    assert_equal 7, box.anchor
+    assert_equal 4, box.height
+    refute box.empty?
+  end
+
+  def test_node_box_of_a_generic_node_reserves_no_space_for_empty_children
+    children = [generic_leaf("2"), generic_empty, generic_leaf("4"), generic_empty, generic_leaf("6")]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal ["     1     ", "  ___|___  ", " |   |   | ", " 2   4   6 "], box.lines
+    assert_equal 11, box.width
+  end
+
+  def test_node_box_of_a_generic_node_with_a_single_real_child_is_a_straight_bar
+    children = [generic_empty, generic_leaf("3"), generic_empty, generic_empty]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+    assert_equal [" 1 ", " | ", " | ", " 3 "], box.lines
+    assert_equal 1, box.anchor
+  end
+
+  def test_node_box_of_a_generic_node_widens_to_fit_a_wide_label
+    children = %w[2 3 4 5].map { |label| generic_leaf(label) }
+    box = PrettyTree::Layout.node_box("a" * 20, children, parent_arity: 1)
+
+    assert_equal ["a" * 20, "     _____|_____    ", "    |   |   |   |   ", "    2   3   4   5   "], box.lines
+    assert_equal 20, box.width
+    assert_equal 10, box.anchor
+  end
+
+  def test_node_box_of_a_generic_node_has_lines_of_equal_width
+    (4..8).each do |count|
+      children = Array.new(count) { |i| generic_leaf((i + 2).to_s) }
+      box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
+
+      assert_equal [box.width], box.lines.map(&:size).uniq, "for #{count} children"
+    end
+  end
+
+  def test_node_box_of_a_generic_node_with_children_of_different_heights
+    tall = PrettyTree::Box.new(["  2  ", " / \\ ", "  4  "], 5, 2, false)
+    box = PrettyTree::Layout.node_box("1", [tall, generic_leaf("3"), generic_leaf("5"), generic_leaf("6")], parent_arity: 1)
+
+    assert_equal [box.width], box.lines.map(&:size).uniq
+    assert_equal 6, box.height
+  end
+
   def boxes(count)
     Array.new(count) { PrettyTree::Layout.empty_box(parent_arity: count) }
   end

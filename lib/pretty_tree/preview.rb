@@ -42,6 +42,11 @@ module PrettyTree
       render(["root", ["l", nil, nil], ["rightlongsubtree", ["a", nil, nil], ["b", nil, nil]]])
       render(["root", ["leftlongsubtree", ["a", nil, nil], ["b", nil, nil]], ["m", nil, nil], ["rightlongsubtree", ["c", nil, nil], ["d", nil, nil]]])
       render([786494, ["dvy", nil, nil, ["", nil, [true, nil, nil], ["cmv", nil]]]])
+      render(["root", [1, nil, nil, nil, nil]])
+      render(["root", [1, nil, nil, nil, nil], [2, nil, nil, nil, nil], [3, nil, nil, nil, nil], [4, nil, nil, nil, nil]])
+      render(["root", [1, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [2, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [3, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [4, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]]])
+      render(["root", [1, nil, nil, nil, nil, nil], [2, nil, nil, nil, nil, nil], [3, nil, nil, nil, nil, nil], [4, nil, nil, nil, nil, nil], [5, nil, nil, nil, nil, nil]])
+      render(["root", [1, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [2, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [3, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [4, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [5, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]]])
     end
   end
 end

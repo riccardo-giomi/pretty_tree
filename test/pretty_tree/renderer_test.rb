@@ -214,6 +214,43 @@ class RendererTest < Minitest::Test
     ], box.lines
   end
 
+  def test_box_for_generic_node_lays_out_label_connectors_and_children
+    box = array_renderer.box_for([1, [2], [3], [4], [5]])
+
+    assert_equal ["       1       ", "  _____|_____  ", " |   |   |   | ", " 2   3   4   5 "], box.lines
+    assert_equal 15, box.width
+    assert_equal 7, box.anchor
+  end
+
+  def test_box_for_generic_node_ignores_nil_children
+    box = array_renderer.box_for([1, [2], nil, [4], nil, [6]])
+
+    assert_equal ["     1     ", "  ___|___  ", " |   |   | ", " 2   4   6 "], box.lines
+  end
+
+  def test_box_for_generic_node_with_a_single_child_among_nil_ones
+    box = array_renderer.box_for([1, nil, [3], nil, nil])
+
+    assert_equal [" 1 ", " | ", " | ", " 3 "], box.lines
+  end
+
+  def test_box_for_generic_node_with_only_nil_children_is_a_leaf
+    assert_equal [" 1 "], array_renderer.box_for([1, nil, nil, nil, nil]).lines
+  end
+
+  def test_box_for_generic_node_pads_its_leaves_to_the_min_leaf_size
+    box = array_renderer.box_for([1, [2], [3], [4], [5]])
+
+    assert_equal " 2   3   4   5 ", box.lines.last
+  end
+
+  def test_box_for_generic_node_with_generic_children
+    box = array_renderer.box_for([1, [2, [3], [4], [5], [6]], [7]])
+
+    assert_equal [box.width], box.lines.map(&:size).uniq
+    assert_equal 7, box.height
+  end
+
   def test_box_for_passes_its_child_count_down_as_parent_arity
     box = array_renderer.box_for([1, [2], [3]])
 

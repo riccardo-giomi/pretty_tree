@@ -26,7 +26,7 @@ module PrettyTree
       lines, width, offsets, anchor = layout.accommodate_parent_label(lines, width, offsets, anchor, label.length)
 
       label_line = layout.render_label_line(label, width, anchor)
-      connector_lines = layout.render_connector_lines(label, anchor, child_boxes, offsets, width)
+      connector_lines = layout.render_connector_lines(label, anchor, offsets, width)
 
       new_lines = [label_line] + connector_lines + lines
       Box.new(lines: new_lines, width:, anchor:, empty: false)
@@ -143,10 +143,10 @@ module PrettyTree
         offsets.first
       end
 
-      def render_connector_lines(_parent_label, _parent_anchor, boxes, offsets, width)
+      def render_connector_lines(_parent_label, _parent_anchor, offsets, width)
         lines = Array.new(2) { " " * width }
 
-        lines = render_middle_branch(lines, offsets.first) unless boxes.first.empty?
+        lines = render_middle_branch(lines, offsets.first) unless @boxes.first.empty?
 
         lines
       end
@@ -157,11 +157,11 @@ module PrettyTree
         (offsets.last - offsets.first) - 1
       end
 
-      def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
+      def render_connector_lines(parent_label, parent_anchor, offsets, width)
         lines = Array.new(2) { " " * width }
 
-        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless boxes.first.empty?
-        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless boxes.last.empty?
+        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless @boxes.first.empty?
+        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless @boxes.last.empty?
 
         lines
       end
@@ -172,22 +172,52 @@ module PrettyTree
         offsets[1]
       end
 
-      def render_connector_lines(parent_label, parent_anchor, boxes, offsets, width)
+      def render_connector_lines(parent_label, parent_anchor, offsets, width)
         lines = Array.new(2) { " " * width }
 
-        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless boxes.first.empty?
-        lines = render_middle_branch(lines, offsets[1]) unless boxes[1].empty?
-        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless boxes.last.empty?
+        lines = render_left_branch(lines, parent_label, parent_anchor, offsets) unless @boxes.first.empty?
+        lines = render_middle_branch(lines, offsets[1]) unless @boxes[1].empty?
+        lines = render_right_branch(lines, parent_label, parent_anchor, offsets) unless @boxes.last.empty?
 
         lines
       end
     end
 
     class Generic < Base
-      # Spoiler for later dev loops
-      #   def label_anchor(offsets)
-      #     (offsets.last - offsets.first) - 1
-      #   end
+      def initialize(boxes)
+        super(boxes.reject(&:empty?))
+      end
+
+      def label_anchor(offsets)
+        middle_or_middle_right_index = offsets.size / 2
+        middle_or_middle_right_offset = offsets[middle_or_middle_right_index]
+
+        return middle_or_middle_right_offset if offsets.size.odd?
+
+        middle_left_offset = offsets[middle_or_middle_right_index - 1]
+
+        middle_left_offset + ((middle_or_middle_right_offset - middle_left_offset) / 2)
+      end
+
+      def render_connector_lines(parent_label, parent_anchor, offsets, width)
+        lines = Array.new(2) { " " * width }
+
+        return render_middle_branch(lines, offsets.first) if offsets.size == 1
+
+        # Single line from (first adjusted anchor + 1) to (last adjusted anchor - 1)
+        from = offsets.first + 1
+        to = offsets.last
+        lines[0][from...to] = "_" * (to - from)
+        # With a single | breaking the line under the parent anchor
+        lines[0][parent_anchor] = "|"
+
+        # Second line is just a "|" over each adjusted anchor
+        offsets.each do |offset|
+          lines[1][offset] = "|"
+        end
+
+        lines
+      end
     end
   end
 end
