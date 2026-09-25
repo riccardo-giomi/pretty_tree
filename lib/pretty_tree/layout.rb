@@ -8,14 +8,14 @@ module PrettyTree
     MIN_LEAF_SIZE = 3 # Required to allow space for connector symbols
     MIN_BINARY_LEAF_SIZE = 5 # Binary leaves require more space for connector symbols
 
-    def self.pad_label(label, arity:) = label.to_s.center((arity == 2) ? MIN_BINARY_LEAF_SIZE : MIN_LEAF_SIZE)
+    def self.pad_label(label, parent_arity:) = label.to_s.center((parent_arity == 2) ? MIN_BINARY_LEAF_SIZE : MIN_LEAF_SIZE)
 
-    def self.empty_box(arity:) = Box.empty(pad_label(nil, arity:))
+    def self.empty_box(parent_arity:) = Box.empty(pad_label(nil, parent_arity:))
 
-    def self.leaf_box(label, arity:) = Box.leaf(pad_label(label, arity:))
+    def self.leaf_box(label, parent_arity:) = Box.leaf(pad_label(label, parent_arity:))
 
-    def self.node_box(label, child_boxes, arity:)
-      return leaf_box(label, arity:) if child_boxes.all?(&:empty?)
+    def self.node_box(label, child_boxes, parent_arity:)
+      return leaf_box(label, parent_arity:) if child_boxes.all?(&:empty?)
 
       return Box.new(lines: [" 1 ", " | ", " | ", " 2 "], width: 3, anchor: 1, empty: false) if child_boxes.size == 1
 

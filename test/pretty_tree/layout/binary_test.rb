@@ -4,11 +4,11 @@ require "test_helper"
 
 class LayoutBinaryTest < Minitest::Test
   def leaf(label)
-    PrettyTree::Layout.leaf_box(label, arity: 2)
+    PrettyTree::Layout.leaf_box(label, parent_arity: 2)
   end
 
   def empty
-    PrettyTree::Layout.empty_box(arity: 2)
+    PrettyTree::Layout.empty_box(parent_arity: 2)
   end
 
   def connectors_for(label, boxes)

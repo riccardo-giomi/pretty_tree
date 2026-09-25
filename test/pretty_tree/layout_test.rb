@@ -12,91 +12,91 @@ class LayoutTest < Minitest::Test
   end
 
   def test_pad_label_centers_short_label
-    assert_equal " a ", PrettyTree::Layout.pad_label("a", arity: 1)
+    assert_equal " a ", PrettyTree::Layout.pad_label("a", parent_arity: 1)
   end
 
   def test_pad_label_puts_the_extra_space_on_the_right
-    assert_equal "ab ", PrettyTree::Layout.pad_label("ab", arity: 1)
+    assert_equal "ab ", PrettyTree::Layout.pad_label("ab", parent_arity: 1)
   end
 
   def test_pad_label_leaves_label_of_min_size_untouched
-    assert_equal "abc", PrettyTree::Layout.pad_label("abc", arity: 1)
+    assert_equal "abc", PrettyTree::Layout.pad_label("abc", parent_arity: 1)
   end
 
   def test_pad_label_leaves_longer_label_untouched
-    assert_equal "hello", PrettyTree::Layout.pad_label("hello", arity: 1)
+    assert_equal "hello", PrettyTree::Layout.pad_label("hello", parent_arity: 1)
   end
 
   def test_pad_label_of_empty_string_is_all_spaces
-    assert_equal "   ", PrettyTree::Layout.pad_label("", arity: 1)
+    assert_equal "   ", PrettyTree::Layout.pad_label("", parent_arity: 1)
   end
 
   def test_pad_label_of_nil_is_all_spaces
-    assert_equal "   ", PrettyTree::Layout.pad_label(nil, arity: 1)
+    assert_equal "   ", PrettyTree::Layout.pad_label(nil, parent_arity: 1)
   end
 
   def test_pad_label_converts_non_strings
-    assert_equal " 7 ", PrettyTree::Layout.pad_label(7, arity: 1)
-    assert_equal " a ", PrettyTree::Layout.pad_label(:a, arity: 1)
+    assert_equal " 7 ", PrettyTree::Layout.pad_label(7, parent_arity: 1)
+    assert_equal " a ", PrettyTree::Layout.pad_label(:a, parent_arity: 1)
   end
 
-  def test_pad_label_uses_binary_leaf_size_for_arity_two
-    assert_equal "  a  ", PrettyTree::Layout.pad_label("a", arity: 2)
+  def test_pad_label_uses_binary_leaf_size_for_parent_arity_two
+    assert_equal "  a  ", PrettyTree::Layout.pad_label("a", parent_arity: 2)
   end
 
-  def test_pad_label_of_nil_is_binary_leaf_wide_for_arity_two
-    assert_equal "     ", PrettyTree::Layout.pad_label(nil, arity: 2)
+  def test_pad_label_of_nil_is_binary_leaf_wide_for_parent_arity_two
+    assert_equal "     ", PrettyTree::Layout.pad_label(nil, parent_arity: 2)
   end
 
   def test_pad_label_leaves_label_longer_than_binary_leaf_size_untouched
-    assert_equal "abcdef", PrettyTree::Layout.pad_label("abcdef", arity: 2)
+    assert_equal "abcdef", PrettyTree::Layout.pad_label("abcdef", parent_arity: 2)
   end
 
-  def test_pad_label_uses_min_leaf_size_for_arity_three
-    assert_equal " a ", PrettyTree::Layout.pad_label("a", arity: 3)
+  def test_pad_label_uses_min_leaf_size_for_parent_arity_three
+    assert_equal " a ", PrettyTree::Layout.pad_label("a", parent_arity: 3)
   end
 
   def test_empty_box_is_an_empty_box
-    assert PrettyTree::Layout.empty_box(arity: 1).empty?
+    assert PrettyTree::Layout.empty_box(parent_arity: 1).empty?
   end
 
   def test_empty_box_is_blank_and_min_leaf_wide
-    box = PrettyTree::Layout.empty_box(arity: 1)
+    box = PrettyTree::Layout.empty_box(parent_arity: 1)
 
     assert_equal ["   "], box.lines
     assert_equal 3, box.width
     assert_equal 1, box.anchor
   end
 
-  def test_empty_box_is_binary_leaf_wide_for_arity_two
-    box = PrettyTree::Layout.empty_box(arity: 2)
+  def test_empty_box_is_binary_leaf_wide_for_parent_arity_two
+    box = PrettyTree::Layout.empty_box(parent_arity: 2)
 
     assert_equal ["     "], box.lines
     assert_equal 5, box.width
     assert_equal 2, box.anchor
   end
 
-  def test_empty_box_is_min_leaf_wide_for_arity_three
-    box = PrettyTree::Layout.empty_box(arity: 3)
+  def test_empty_box_is_min_leaf_wide_for_parent_arity_three
+    box = PrettyTree::Layout.empty_box(parent_arity: 3)
 
     assert_equal ["   "], box.lines
     assert_equal 3, box.width
   end
 
   def test_leaf_box_is_not_empty
-    refute PrettyTree::Layout.leaf_box("a", arity: 1).empty?
+    refute PrettyTree::Layout.leaf_box("a", parent_arity: 1).empty?
   end
 
   def test_leaf_box_pads_short_label
-    box = PrettyTree::Layout.leaf_box("a", arity: 1)
+    box = PrettyTree::Layout.leaf_box("a", parent_arity: 1)
 
     assert_equal [" a "], box.lines
     assert_equal 3, box.width
     assert_equal 1, box.anchor
   end
 
-  def test_leaf_box_pads_short_label_to_binary_leaf_size_for_arity_two
-    box = PrettyTree::Layout.leaf_box("a", arity: 2)
+  def test_leaf_box_pads_short_label_to_binary_leaf_size_for_parent_arity_two
+    box = PrettyTree::Layout.leaf_box("a", parent_arity: 2)
 
     assert_equal ["  a  "], box.lines
     assert_equal 5, box.width
@@ -104,7 +104,7 @@ class LayoutTest < Minitest::Test
   end
 
   def test_leaf_box_keeps_long_label_and_anchors_on_its_middle
-    box = PrettyTree::Layout.leaf_box("hello", arity: 1)
+    box = PrettyTree::Layout.leaf_box("hello", parent_arity: 1)
 
     assert_equal ["hello"], box.lines
     assert_equal 5, box.width
@@ -112,30 +112,30 @@ class LayoutTest < Minitest::Test
   end
 
   def test_leaf_box_of_even_label_anchors_right_of_center
-    box = PrettyTree::Layout.leaf_box("abcd", arity: 1)
+    box = PrettyTree::Layout.leaf_box("abcd", parent_arity: 1)
 
     assert_equal 4, box.width
     assert_equal 2, box.anchor
   end
 
   def test_node_box_with_only_empty_children_is_a_leaf_box
-    children = [PrettyTree::Layout.empty_box(arity: 2), PrettyTree::Layout.empty_box(arity: 2)]
-    box = PrettyTree::Layout.node_box("a", children, arity: 1)
+    children = [PrettyTree::Layout.empty_box(parent_arity: 2), PrettyTree::Layout.empty_box(parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("a", children, parent_arity: 1)
 
     assert_equal [" a "], box.lines
     refute box.empty?
   end
 
-  def test_node_box_with_only_empty_children_pads_for_its_own_arity
-    children = [PrettyTree::Layout.empty_box(arity: 2), PrettyTree::Layout.empty_box(arity: 2)]
-    box = PrettyTree::Layout.node_box("a", children, arity: 2)
+  def test_node_box_with_only_empty_children_pads_for_its_own_parent_arity
+    children = [PrettyTree::Layout.empty_box(parent_arity: 2), PrettyTree::Layout.empty_box(parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("a", children, parent_arity: 2)
 
     assert_equal ["  a  "], box.lines
     assert_equal 5, box.width
   end
 
   def test_node_box_with_no_children_is_a_leaf_box
-    box = PrettyTree::Layout.node_box("a", [], arity: 1)
+    box = PrettyTree::Layout.node_box("a", [], parent_arity: 1)
 
     assert_equal [" a "], box.lines
     refute box.empty?
@@ -166,15 +166,15 @@ class LayoutTest < Minitest::Test
   end
 
   def test_node_box_of_a_binary_node_draws_label_connectors_and_children
-    children = [PrettyTree::Layout.leaf_box("2", arity: 2), PrettyTree::Layout.leaf_box("3", arity: 2)]
-    box = PrettyTree::Layout.node_box("1", children, arity: 1)
+    children = [PrettyTree::Layout.leaf_box("2", parent_arity: 2), PrettyTree::Layout.leaf_box("3", parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
     assert_equal ["     1     ", "    / \\    ", "   /   \\   ", "  2     3  "], box.lines
   end
 
   def test_node_box_of_a_binary_node_has_the_merged_width_and_label_anchor
-    children = [PrettyTree::Layout.leaf_box("2", arity: 2), PrettyTree::Layout.leaf_box("3", arity: 2)]
-    box = PrettyTree::Layout.node_box("1", children, arity: 1)
+    children = [PrettyTree::Layout.leaf_box("2", parent_arity: 2), PrettyTree::Layout.leaf_box("3", parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
     assert_equal 11, box.width
     assert_equal 5, box.anchor
@@ -182,36 +182,36 @@ class LayoutTest < Minitest::Test
   end
 
   def test_node_box_of_a_binary_node_is_three_lines_taller_than_its_children
-    children = [PrettyTree::Layout.leaf_box("2", arity: 2), PrettyTree::Layout.leaf_box("3", arity: 2)]
+    children = [PrettyTree::Layout.leaf_box("2", parent_arity: 2), PrettyTree::Layout.leaf_box("3", parent_arity: 2)]
 
-    assert_equal 4, PrettyTree::Layout.node_box("1", children, arity: 1).height
+    assert_equal 4, PrettyTree::Layout.node_box("1", children, parent_arity: 1).height
   end
 
   def test_node_box_of_a_binary_node_with_only_a_left_child
-    children = [PrettyTree::Layout.leaf_box("2", arity: 2), PrettyTree::Layout.empty_box(arity: 2)]
-    box = PrettyTree::Layout.node_box("1", children, arity: 1)
+    children = [PrettyTree::Layout.leaf_box("2", parent_arity: 2), PrettyTree::Layout.empty_box(parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
     assert_equal ["     1     ", "    /      ", "   /       ", "  2        "], box.lines
   end
 
   def test_node_box_of_a_binary_node_with_only_a_right_child
-    children = [PrettyTree::Layout.empty_box(arity: 2), PrettyTree::Layout.leaf_box("3", arity: 2)]
-    box = PrettyTree::Layout.node_box("1", children, arity: 1)
+    children = [PrettyTree::Layout.empty_box(parent_arity: 2), PrettyTree::Layout.leaf_box("3", parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
     assert_equal ["     1     ", "      \\    ", "       \\   ", "        3  "], box.lines
   end
 
   def test_node_box_of_a_binary_node_with_children_of_different_heights
     tall = PrettyTree::Box.new(["  2  ", " / \\ ", "  4  "], 5, 2, false)
-    box = PrettyTree::Layout.node_box("1", [tall, PrettyTree::Layout.leaf_box("3", arity: 2)], arity: 1)
+    box = PrettyTree::Layout.node_box("1", [tall, PrettyTree::Layout.leaf_box("3", parent_arity: 2)], parent_arity: 1)
 
     assert_equal ["     1     ", "    / \\    ", "   /   \\   ", "  2     3  ", " / \\       ", "  4        "], box.lines
     assert_equal [11], box.lines.map(&:size).uniq
   end
 
   def test_node_box_of_a_binary_node_with_wide_children_uses_underscores
-    children = [PrettyTree::Layout.leaf_box("w" * 12, arity: 2), PrettyTree::Layout.leaf_box("v" * 12, arity: 2)]
-    box = PrettyTree::Layout.node_box("1", children, arity: 1)
+    children = [PrettyTree::Layout.leaf_box("w" * 12, parent_arity: 2), PrettyTree::Layout.leaf_box("v" * 12, parent_arity: 2)]
+    box = PrettyTree::Layout.node_box("1", children, parent_arity: 1)
 
     assert_equal 25, box.width
     assert_equal 12, box.anchor
@@ -219,6 +219,6 @@ class LayoutTest < Minitest::Test
   end
 
   def boxes(count)
-    Array.new(count) { PrettyTree::Layout.empty_box(arity: count) }
+    Array.new(count) { PrettyTree::Layout.empty_box(parent_arity: count) }
   end
 end

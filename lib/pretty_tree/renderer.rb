@@ -12,15 +12,15 @@ module PrettyTree
       @max_width = max_width
     end
 
-    def box_for(node, arity: 1)
-      return Layout.empty_box(arity:) if node.nil?
+    def box_for(node, parent_arity: 1)
+      return Layout.empty_box(parent_arity:) if node.nil?
 
       label = @formatter.label(@adapter.value(node), max_width: @max_width)
       children = @adapter.children(node)
       # Visit all children, merge getting back from the recursion
-      child_boxes = children.map { |node| box_for(node, arity: children.size) }
+      child_boxes = children.map { |node| box_for(node, parent_arity: children.size) }
 
-      Layout.node_box(label, child_boxes, arity:)
+      Layout.node_box(label, child_boxes, parent_arity:)
     end
   end
 end

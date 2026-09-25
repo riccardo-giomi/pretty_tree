@@ -90,7 +90,7 @@ class RendererTest < Minitest::Test
   end
 
   def test_box_for_nil_sibling_of_two_is_binary_leaf_wide
-    box = array_renderer.box_for(nil, arity: 2)
+    box = array_renderer.box_for(nil, parent_arity: 2)
 
     assert_equal ["     "], box.lines
     assert_equal 5, box.width
@@ -98,7 +98,7 @@ class RendererTest < Minitest::Test
   end
 
   def test_box_for_leaf_sibling_of_two_is_padded_to_binary_leaf_size
-    box = array_renderer.box_for([1], arity: 2)
+    box = array_renderer.box_for([1], parent_arity: 2)
 
     assert_equal ["  1  "], box.lines
     assert_equal 5, box.width
@@ -106,14 +106,14 @@ class RendererTest < Minitest::Test
   end
 
   def test_box_for_leaf_sibling_of_three_is_padded_to_min_leaf_size
-    box = array_renderer.box_for([1], arity: 3)
+    box = array_renderer.box_for([1], parent_arity: 3)
 
     assert_equal [" 1 "], box.lines
     assert_equal 3, box.width
   end
 
-  def test_box_for_leaf_with_two_nil_children_is_padded_for_its_own_arity
-    box = array_renderer.box_for([1, nil, nil], arity: 1)
+  def test_box_for_leaf_with_two_nil_children_is_padded_for_its_own_parent_arity
+    box = array_renderer.box_for([1, nil, nil], parent_arity: 1)
 
     assert_equal [" 1 "], box.lines
   end
@@ -152,7 +152,7 @@ class RendererTest < Minitest::Test
     ], box.lines
   end
 
-  def test_box_for_passes_the_number_of_siblings_down_as_arity
+  def test_box_for_passes_its_child_count_down_as_parent_arity
     box = array_renderer.box_for([1, [2], [3]])
 
     assert_equal "  2     3  ", box.lines.last
