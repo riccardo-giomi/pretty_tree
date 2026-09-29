@@ -35,7 +35,7 @@ require "pretty_tree"
 tree = ["a", ["b", nil, nil], ["c", ["d", nil, nil], nil]]
 
 PrettyTree.print(tree)
-
+# =>
     "a"
    /   \
   /     \
@@ -81,7 +81,7 @@ A `Formatter` controls how a value is turned into a label (defaults to `#inspect
 
 ```ruby
 class MyFormatter < PrettyTree::Formatter
-  def label(value) = value.to_s.upcase
+  def label(value, max_width: nil) = value.to_s.upcase
 end
 
 PrettyTree.render(my_tree, formatter: MyFormatter.new)
