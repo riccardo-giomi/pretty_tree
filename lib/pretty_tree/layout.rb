@@ -5,21 +5,17 @@ require_relative "box"
 module PrettyTree
   module Layout
     GAP = 1
-    MIN_LEAF_SIZE = 3 # Required to allow space for connector symbols
-    MIN_BINARY_LEAF_SIZE = 5 # Binary leaves require more space for connector symbols
 
-    def self.pad_label(label, parent_arity:) = label.to_s.center((parent_arity == 2) ? MIN_BINARY_LEAF_SIZE : MIN_LEAF_SIZE)
+    def self.empty_box(parent_arity:)
+      layout_class_for(parent_arity).empty_box
+    end
 
-    def self.empty_box(parent_arity:) = Box.empty(pad_label(nil, parent_arity:))
+    def self.node_box(label, child_boxes, parent_arity:, position:)
+      return layout_class_for(parent_arity).leaf_box(label, position:) if child_boxes.all?(&:empty?)
 
-    def self.leaf_box(label, parent_arity:) = Box.leaf(pad_label(label, parent_arity:))
+      label = Base.pad_label(label)
 
-    def self.node_box(label, child_boxes, parent_arity:)
-      return leaf_box(label, parent_arity:) if child_boxes.all?(&:empty?)
-
-      label = pad_label(label, parent_arity:)
       layout = layout_for(child_boxes)
-
       lines, width, offsets = layout.merge
 
       anchor = layout.label_anchor(offsets)
@@ -32,8 +28,8 @@ module PrettyTree
       Box.new(lines: new_lines, width:, anchor:, empty: false)
     end
 
-    def self.layout_for(boxes)
-      case boxes.size
+    def self.layout_class_for(size)
+      case size
       when 1
         Unary
       when 2
@@ -42,10 +38,21 @@ module PrettyTree
         Ternary
       else
         Generic
-      end.new(boxes)
+      end
+    end
+
+    def self.layout_for(boxes)
+      layout_class_for(boxes.size).new(boxes)
     end
 
     class Base
+      MIN_LEAF_SIZE = 3 # Required to allow space for connector symbols
+
+      def self.pad_label(label) = label.to_s.center(MIN_LEAF_SIZE)
+
+      def self.leaf_box(label, position:) = Box.leaf(pad_label(label))
+      def self.empty_box = Box.empty(pad_label(nil))
+
       def initialize(boxes)
         @boxes = boxes
       end
@@ -153,8 +160,35 @@ module PrettyTree
     end
 
     class Binary < Base
+      CONNECTOR_SPAN = 3
+      MIN_ANCHORS_DISTANCE = 2 * CONNECTOR_SPAN
+
+      # Binary leaves require more space for connector symbols
+      def self.leaf_box(label, position:)
+        padded = pad_label(label)
+        return Box.leaf(padded + " ", anchor: padded.size / 2) if position == 0
+
+        Box.leaf(" " + padded, anchor: padded.size / 2 + 1)
+      end
+
+      def self.empty_box = Box.empty("")
+
       def label_anchor(offsets)
-        (offsets.last - offsets.first) - 1
+        return offsets.last - CONNECTOR_SPAN if @boxes.first.empty?
+        return offsets.first + CONNECTOR_SPAN if @boxes.last.empty?
+
+        offsets.first + (offsets.last - offsets.first) / 2
+      end
+
+      def merge
+        lines, width, offsets = super
+        return [lines, width, offsets] if @boxes.any?(&:empty?)
+
+        spread = MIN_ANCHORS_DISTANCE - (offsets.last - offsets.first)
+        return [lines, width, offsets] unless spread.positive?
+
+        lines = lines.map { |line| line.dup.insert(@boxes.first.width, " " * spread) }
+        [lines, width + spread, [offsets.first, offsets.last + spread]]
       end
 
       def render_connector_lines(parent_label, parent_anchor, offsets, width)

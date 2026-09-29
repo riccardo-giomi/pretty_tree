@@ -21,6 +21,14 @@ class BoxTest < Minitest::Test
     assert_equal 2, PrettyTree::Box.leaf("abcd").anchor
   end
 
+  def test_leaf_anchor_can_be_given_explicitly
+    box = PrettyTree::Box.leaf("abcd", anchor: 1)
+
+    assert_equal 1, box.anchor
+    assert_equal 4, box.width
+    assert_equal ["abcd"], box.lines
+  end
+
   def test_leaf_is_not_empty_by_default
     refute PrettyTree::Box.leaf("a").empty?
   end
@@ -43,6 +51,22 @@ class BoxTest < Minitest::Test
     assert_equal ["   "], box.lines
     assert_equal 3, box.width
     assert_equal 1, box.anchor
+  end
+
+  def test_empty_anchor_can_be_given_explicitly
+    box = PrettyTree::Box.empty("    ", anchor: 2)
+
+    assert box.empty?
+    assert_equal 2, box.anchor
+  end
+
+  def test_empty_with_empty_string_takes_no_room
+    box = PrettyTree::Box.empty("")
+
+    assert box.empty?
+    assert_equal [""], box.lines
+    assert_equal 0, box.width
+    assert_equal 0, box.anchor
   end
 
   def test_height_is_number_of_lines

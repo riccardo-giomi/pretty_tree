@@ -4,7 +4,7 @@ require "test_helper"
 
 class LayoutTernaryTest < Minitest::Test
   def leaf(label)
-    PrettyTree::Layout.leaf_box(label, parent_arity: 3)
+    PrettyTree::Layout::Ternary.leaf_box(label, position: 0)
   end
 
   def empty

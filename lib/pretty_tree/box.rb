@@ -10,14 +10,14 @@ module PrettyTree
   # lines:   Array<String>, each exactly :width characters
   # anchor:  0-indexed column
   Box = Struct.new(:lines, :width, :anchor, :empty) do
-    def self.leaf(label, empty: false)
-      new([label], label.size, label.size / 2, empty)
+    def self.leaf(label, anchor: label.size / 2, empty: false)
+      new(lines: [label], width: label.size, anchor:, empty:)
     end
 
     # An empty box can still have a label if the layout renders it as empty
     # spaces for spacing.
-    def self.empty(label)
-      leaf(label, empty: true)
+    def self.empty(label, anchor: label.size / 2)
+      leaf(label, anchor:, empty: true)
     end
 
     def height = lines.size

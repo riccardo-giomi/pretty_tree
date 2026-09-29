@@ -3,13 +3,13 @@
 Pretty-print tree-shaped data as readable ASCII diagrams — for `#inspect` output, log lines, or debugging.
 
 ```ascii
-   "a"
-   / \
-  /   \
-"b"   "c"
-     /
-    /
-  "d"
+                 1
+       __________|__________
+      /          |          \
+     2           6          10
+   / | \       / | \       / | \
+  /  |  \     /  |  \     /  |  \
+ 3   4   5   7   8   9  11  12  13
 ```
 
 ## Installation
@@ -35,14 +35,14 @@ require "pretty_tree"
 tree = ["a", ["b", nil, nil], ["c", ["d", nil, nil], nil]]
 
 PrettyTree.print(tree)
-# =>
-#    "a"
-#    / \
-#   /   \
-# "b"   "c"
-#      /
-#     /
-#   "d"
+
+    "a"
+   /   \
+  /     \
+"b"     "c"
+        /
+       /
+     "d"
 ```
 
 `PrettyTree.render(tree)` returns the diagram as a `String` instead of printing
@@ -97,7 +97,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To
 release a new version, update the version number in `version.rb`, then run
 `bundle exec rake release`.
 
-`rake preview` will call `PrintTree.preview`.
+`rake preview` will call `PrettyTree.preview`.
 
 ## Contributing
 

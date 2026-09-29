@@ -14,15 +14,17 @@ module PrettyTree
 
     def call(tree) = box_for(tree).lines.join("\n")
 
-    def box_for(node, parent_arity: 1)
+    def box_for(node, parent_arity: 1, position: 0)
       return Layout.empty_box(parent_arity:) if node.nil?
 
       label = @formatter.label(@adapter.value(node), max_width: @max_width)
       children = @adapter.children(node)
       # Visit all children, merge getting back from the recursion
-      child_boxes = children.map { |node| box_for(node, parent_arity: children.size) }
+      child_boxes = children.each_with_index.map do |node, i|
+        box_for(node, parent_arity: children.size, position: i)
+      end
 
-      Layout.node_box(label, child_boxes, parent_arity:)
+      Layout.node_box(label, child_boxes, parent_arity:, position:)
     end
   end
 end

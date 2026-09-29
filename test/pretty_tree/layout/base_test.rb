@@ -15,6 +15,68 @@ class LayoutBaseTest < Minitest::Test
     assert_equal 1, PrettyTree::Layout::GAP
   end
 
+  def test_min_leaf_size_leaves_room_for_connectors
+    assert_equal 3, PrettyTree::Layout::Base::MIN_LEAF_SIZE
+  end
+
+  def test_pad_label_centers_short_label
+    assert_equal " a ", PrettyTree::Layout::Base.pad_label("a")
+  end
+
+  def test_pad_label_puts_the_extra_space_on_the_right
+    assert_equal "ab ", PrettyTree::Layout::Base.pad_label("ab")
+  end
+
+  def test_pad_label_leaves_label_of_min_size_untouched
+    assert_equal "abc", PrettyTree::Layout::Base.pad_label("abc")
+  end
+
+  def test_pad_label_leaves_longer_label_untouched
+    assert_equal "hello", PrettyTree::Layout::Base.pad_label("hello")
+  end
+
+  def test_pad_label_of_empty_string_is_all_spaces
+    assert_equal "   ", PrettyTree::Layout::Base.pad_label("")
+  end
+
+  def test_pad_label_of_nil_is_all_spaces
+    assert_equal "   ", PrettyTree::Layout::Base.pad_label(nil)
+  end
+
+  def test_pad_label_converts_non_strings
+    assert_equal " 7 ", PrettyTree::Layout::Base.pad_label(7)
+    assert_equal " a ", PrettyTree::Layout::Base.pad_label(:a)
+  end
+
+  def test_leaf_box_is_a_padded_label
+    box = PrettyTree::Layout::Base.leaf_box("a", position: 0)
+
+    assert_equal [" a "], box.lines
+    assert_equal 3, box.width
+    assert_equal 1, box.anchor
+    refute box.empty?
+  end
+
+  def test_leaf_box_does_not_depend_on_position
+    assert_equal PrettyTree::Layout::Base.leaf_box("a", position: 0), PrettyTree::Layout::Base.leaf_box("a", position: 2)
+  end
+
+  def test_leaf_box_keeps_long_label_and_anchors_on_its_middle
+    box = PrettyTree::Layout::Base.leaf_box("hello", position: 0)
+
+    assert_equal ["hello"], box.lines
+    assert_equal 2, box.anchor
+  end
+
+  def test_empty_box_is_blank_and_min_leaf_wide
+    box = PrettyTree::Layout::Base.empty_box
+
+    assert_equal ["   "], box.lines
+    assert_equal 3, box.width
+    assert_equal 1, box.anchor
+    assert box.empty?
+  end
+
   def test_merge_of_a_single_box_returns_its_lines_unchanged
     lines, width, offsets = layout(box([" a ", " | "], 1)).merge
 

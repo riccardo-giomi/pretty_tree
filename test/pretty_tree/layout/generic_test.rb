@@ -4,7 +4,7 @@ require "test_helper"
 
 class LayoutGenericTest < Minitest::Test
   def leaf(label)
-    PrettyTree::Layout.leaf_box(label, parent_arity: 4)
+    PrettyTree::Layout::Generic.leaf_box(label, position: 0)
   end
 
   def empty
@@ -154,7 +154,7 @@ class LayoutGenericTest < Minitest::Test
   end
 
   def test_connectors_of_far_apart_children_are_drawn_with_underscores_all_the_way
-    children = ["w" * 12, "x", "v" * 12, "y"].map { |label| PrettyTree::Layout.leaf_box(label, parent_arity: 4) }
+    children = ["w" * 12, "x", "v" * 12, "y"].map { |label| PrettyTree::Layout::Generic.leaf_box(label, position: 0) }
     top, bottom = connectors_for(children)
 
     assert_match(/\A {7}_+\|_+ {2}\z/, top)

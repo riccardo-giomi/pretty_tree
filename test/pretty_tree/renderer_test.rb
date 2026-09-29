@@ -89,19 +89,27 @@ class RendererTest < Minitest::Test
     assert_equal [[1, 5]], formatter.calls
   end
 
-  def test_box_for_nil_sibling_of_two_is_binary_leaf_wide
+  def test_box_for_nil_sibling_of_two_takes_no_room
     box = array_renderer.box_for(nil, parent_arity: 2)
 
-    assert_equal ["     "], box.lines
-    assert_equal 5, box.width
+    assert_equal [""], box.lines
+    assert_equal 0, box.width
     assert box.empty?
   end
 
-  def test_box_for_leaf_sibling_of_two_is_padded_to_binary_leaf_size
-    box = array_renderer.box_for([1], parent_arity: 2)
+  def test_box_for_left_leaf_of_two_has_a_spare_column_on_its_right
+    box = array_renderer.box_for([1], parent_arity: 2, position: 0)
 
-    assert_equal ["  1  "], box.lines
-    assert_equal 5, box.width
+    assert_equal [" 1  "], box.lines
+    assert_equal 4, box.width
+    assert_equal 1, box.anchor
+  end
+
+  def test_box_for_right_leaf_of_two_has_a_spare_column_on_its_left
+    box = array_renderer.box_for([1], parent_arity: 2, position: 1)
+
+    assert_equal ["  1 "], box.lines
+    assert_equal 4, box.width
     assert_equal 2, box.anchor
   end
 
@@ -121,15 +129,15 @@ class RendererTest < Minitest::Test
   def test_box_for_binary_node_lays_out_label_connectors_and_children
     box = array_renderer.box_for([1, [2], [3]])
 
-    assert_equal ["     1     ", "    / \\    ", "   /   \\   ", "  2     3  "], box.lines
-    assert_equal 11, box.width
-    assert_equal 5, box.anchor
+    assert_equal ["    1    ", "   / \\   ", "  /   \\  ", " 2     3 "], box.lines
+    assert_equal 9, box.width
+    assert_equal 4, box.anchor
   end
 
   def test_box_for_binary_node_with_a_nil_child
     box = array_renderer.box_for([1, [2], nil])
 
-    assert_equal ["     1     ", "    /      ", "   /       ", "  2        "], box.lines
+    assert_equal ["    1 ", "   /  ", "  /   ", " 2    "], box.lines
   end
 
   def test_box_for_binary_node_with_only_nil_children_is_a_leaf
@@ -142,13 +150,13 @@ class RendererTest < Minitest::Test
     box = array_renderer.box_for([1, [2, [4], [5]], [3, [6], [7]]])
 
     assert_equal [
-      "           1           ",
-      "       ____|____       ",
-      "      /         \\      ",
-      "     2           3     ",
-      "    / \\         / \\    ",
-      "   /   \\       /   \\   ",
-      "  4     5     6     7  "
+      "         1         ",
+      "      ___|___      ",
+      "     /       \\     ",
+      "    2         3    ",
+      "   / \\       / \\   ",
+      "  /   \\     /   \\  ",
+      " 4     5   6     7 "
     ], box.lines
   end
 
@@ -204,13 +212,13 @@ class RendererTest < Minitest::Test
     box = array_renderer.box_for([1, [2, [5]], [3, [6], [7], [8]], [4, [9], [10]]])
 
     assert_equal [
-      "         1                 ",
-      "   ______|__________       ",
-      "  /      |          \\      ",
-      " 2       3           4     ",
-      " |     / | \\        / \\    ",
-      " |    /  |  \\      /   \\   ",
-      " 5   6   7   8    9    10  "
+      "         1               ",
+      "   ______|_________      ",
+      "  /      |         \\     ",
+      " 2       3          4    ",
+      " |     / | \\       / \\   ",
+      " |    /  |  \\     /   \\  ",
+      " 5   6   7   8   9    10 "
     ], box.lines
   end
 
@@ -254,7 +262,7 @@ class RendererTest < Minitest::Test
   def test_box_for_passes_its_child_count_down_as_parent_arity
     box = array_renderer.box_for([1, [2], [3]])
 
-    assert_equal "  2     3  ", box.lines.last
+    assert_equal " 2     3 ", box.lines.last
   end
 
   def test_box_for_visits_the_node_before_its_children_left_to_right

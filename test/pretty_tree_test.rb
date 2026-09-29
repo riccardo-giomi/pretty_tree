@@ -44,69 +44,69 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_a_simple_balanced_binary_tree
     expected_lines = [
-      "     1     ",
-      "    / \\    ",
-      "   /   \\   ",
-      "  2     3  "
+      "    1    ",
+      "   / \\   ",
+      "  /   \\  ",
+      " 2     3 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, nil, nil], [3, nil, nil]])
   end
 
   def test_renders_a_left_unbalanced_binary_tree
     expected_lines = [
-      "     1     ",
-      "    /      ",
-      "   /       ",
-      "  2        "
+      "    1 ",
+      "   /  ",
+      "  /   ",
+      " 2    "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, nil, nil], nil])
   end
 
   def test_renders_a_right_unbalanced_binary_tree
     expected_lines = [
-      "     1     ",
-      "      \\    ",
-      "       \\   ",
-      "        3  "
+      " 1    ",
+      "  \\   ",
+      "   \\  ",
+      "    3 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, nil, [3, nil, nil]])
   end
 
   def test_renders_a_left_leaning_chain
     expected_lines = [
-      "        1        ",
-      "       /         ",
-      "      /          ",
-      "     2           ",
-      "    /            ",
-      "   /             ",
-      "  3              "
+      "       1 ",
+      "      /  ",
+      "     /   ",
+      "    2    ",
+      "   /     ",
+      "  /      ",
+      " 3       "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, nil, nil], nil], nil])
   end
 
   def test_renders_a_right_leaning_chain
     expected_lines = [
-      "        1        ",
-      "         \\       ",
-      "          \\      ",
-      "           2     ",
-      "            \\    ",
-      "             \\   ",
-      "              3  "
+      " 1       ",
+      "  \\      ",
+      "   \\     ",
+      "    2    ",
+      "     \\   ",
+      "      \\  ",
+      "       3 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, nil, [2, nil, [3, nil, nil]]])
   end
 
   def test_renders_a_full_binary_tree_of_three_levels
     expected_lines = [
-      "           1           ",
-      "       ____|____       ",
-      "      /         \\      ",
-      "     2           3     ",
-      "    / \\         / \\    ",
-      "   /   \\       /   \\   ",
-      "  4     5     6     7  "
+      "         1         ",
+      "      ___|___      ",
+      "     /       \\     ",
+      "    2         3    ",
+      "   / \\       / \\   ",
+      "  /   \\     /   \\  ",
+      " 4     5   6     7 "
     ]
     tree = [1, [2, [4, nil, nil], [5, nil, nil]], [3, [6, nil, nil], [7, nil, nil]]]
 
@@ -115,13 +115,13 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_string_values_inspected
     expected_lines = [
-      "          \"c\"          ",
-      "       ____|____       ",
-      "      /         \\      ",
-      "    \"b\"         \"d\"    ",
-      "    /           / \\    ",
-      "   /           /   \\   ",
-      " \"a\"         \"e\"   \"f\" "
+      "      \"c\"       ",
+      "      /  \\      ",
+      "     /    \\     ",
+      "   \"b\"    \"d\"   ",
+      "   /      / \\   ",
+      "  /      /   \\  ",
+      "\"a\"    \"e\"   \"f\""
     ]
     tree = ["c", ["b", ["a", nil, nil], nil], ["d", ["e", nil, nil], ["f", nil, nil]]]
 
@@ -130,10 +130,10 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_far_apart_children_with_underscore_connectors
     expected_lines = [
-      "            1            ",
-      "        ____|_____       ",
-      "       /          \\      ",
-      "\"wwwwwwww... \"vvvvvvvv..."
+      "             1             ",
+      "        _____|______       ",
+      "       /            \\      ",
+      "\"wwwwwwww...   \"vvvvvvvv..."
     ]
     tree = [1, ["wwwwwwwwwwww", nil, nil], ["vvvvvvvvvvvv", nil, nil]]
 
@@ -155,13 +155,13 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_a_single_child_with_two_children_of_its_own
     expected_lines = [
-      "     1     ",
-      "     |     ",
-      "     |     ",
-      "     2     ",
-      "    / \\    ",
-      "   /   \\   ",
-      "  3     4  "
+      "    1    ",
+      "    |    ",
+      "    |    ",
+      "    2    ",
+      "   / \\   ",
+      "  /   \\  ",
+      " 3     4 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, nil, nil], [4, nil, nil]]])
   end
@@ -198,13 +198,13 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_a_tree_mixing_one_two_and_three_children
     expected_lines = [
-      "         1                 ",
-      "   ______|__________       ",
-      "  /      |          \\      ",
-      " 2       3           4     ",
-      " |     / | \\        / \\    ",
-      " |    /  |  \\      /   \\   ",
-      " 5   6   7   8    9    10  "
+      "         1               ",
+      "   ______|_________      ",
+      "  /      |         \\     ",
+      " 2       3          4    ",
+      " |     / | \\       / \\   ",
+      " |    /  |  \\     /   \\  ",
+      " 5   6   7   8   9    10 "
     ]
     tree = [1, [2, [5]], [3, [6], [7], [8]], [4, [9], [10]]]
 
@@ -263,42 +263,42 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_a_wide_label_deeper_in_the_tree
     expected_lines = [
-      "        1         ",
-      "        |_____    ",
-      "       /      \\   ",
-      "123456789012   4  ",
-      "     / \\          ",
-      "    /   \\         ",
-      "   2     3        "
+      "          1      ",
+      "        / |___   ",
+      "       /      \\  ",
+      "123456789012   4 ",
+      "     / \\         ",
+      "    /   \\        ",
+      "   2     3       "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [123456789012, [2], [3]], [4]])
   end
 
   def test_renders_two_children_that_each_have_a_single_child
     expected_lines = [
-      "     1     ",
-      "    / \\    ",
-      "   /   \\   ",
-      "  2     4  ",
-      "  |     |  ",
-      "  |     |  ",
-      "  3     5  "
+      "    1    ",
+      "   / \\   ",
+      "  /   \\  ",
+      " 2     4 ",
+      " |     | ",
+      " |     | ",
+      " 3     5 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3]], [4, [5]]])
   end
 
   def test_renders_two_children_with_single_children_of_different_heights
     expected_lines = [
-      "     1     ",
-      "    / \\    ",
-      "   /   \\   ",
-      "  2     5  ",
-      "  |     |  ",
-      "  |     |  ",
-      "  3     6  ",
-      "  |        ",
-      "  |        ",
-      "  4        "
+      "    1    ",
+      "   / \\   ",
+      "  /   \\  ",
+      " 2     5 ",
+      " |     | ",
+      " |     | ",
+      " 3     6 ",
+      " |       ",
+      " |       ",
+      " 4       "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3, [4]]], [5, [6]]])
   end
@@ -375,26 +375,26 @@ class TestPrettyTree < Minitest::Test
 
   def test_renders_a_node_with_four_children_as_the_left_child_of_a_binary_node
     expected_lines = [
-      "          1          ",
-      "         /|______    ",
-      "        /        \\   ",
-      "       2          7  ",
-      "  _____|_____        ",
-      " |   |   |   |       ",
-      " 3   4   5   6       "
+      "            1       ",
+      "         ___|____   ",
+      "        /        \\  ",
+      "       2          7 ",
+      "  _____|_____       ",
+      " |   |   |   |      ",
+      " 3   4   5   6      "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [2, [3], [4], [5], [6]], [7]])
   end
 
   def test_renders_a_node_with_four_children_as_the_right_child_of_a_binary_node
     expected_lines = [
-      "          1          ",
-      "    ______|\\         ",
-      "   /        \\        ",
-      "  7          2       ",
-      "        _____|_____  ",
-      "       |   |   |   | ",
-      "       3   4   5   6 "
+      "      1             ",
+      "   ___|____         ",
+      "  /        \\        ",
+      " 7          2       ",
+      "       _____|_____  ",
+      "      |   |   |   | ",
+      "      3   4   5   6 "
     ]
     assert_equal render_lines(expected_lines), PrettyTree.render([1, [7], [2, [3], [4], [5], [6]]])
   end
@@ -460,7 +460,7 @@ class TestPrettyTree < Minitest::Test
   def test_print_writes_a_multiline_tree_to_stdout
     out, _err = capture_io { PrettyTree.print([1, [2, nil, nil], [3, nil, nil]]) }
 
-    assert_equal render_lines(["     1     ", "    / \\    ", "   /   \\   ", "  2     3  "]) + "\n", out
+    assert_equal render_lines(["    1    ", "   / \\   ", "  /   \\  ", " 2     3 "]) + "\n", out
   end
 
   def test_print_writes_render_output_to_stdout_with_trailing_newline
