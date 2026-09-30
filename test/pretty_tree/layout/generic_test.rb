@@ -161,4 +161,21 @@ class LayoutGenericTest < Minitest::Test
     assert_equal 4, bottom.count("|")
     assert_equal top.size, bottom.size
   end
+
+  def test_label_anchor_of_an_even_number_of_offsets_ignores_the_label_length
+    layout = PrettyTree::Layout::Generic.new([])
+
+    [1, 2, 3, 4, 5, 6, 12].each do |length|
+      assert_equal 8, layout.label_anchor([1, 6, 11, 16], length), "for length #{length}"
+      assert_equal 4, layout.label_anchor([1, 4, 5, 8], length), "for length #{length}"
+    end
+  end
+
+  def test_label_anchor_of_an_odd_number_of_offsets_ignores_the_label_length
+    layout = PrettyTree::Layout::Generic.new([])
+
+    [1, 2, 4, 6].each do |length|
+      assert_equal 9, layout.label_anchor([1, 5, 9, 13, 17], length), "for length #{length}"
+    end
+  end
 end

@@ -18,7 +18,7 @@ module PrettyTree
       layout = layout_for(child_boxes)
       lines, width, offsets = layout.merge
 
-      anchor = layout.label_anchor(offsets)
+      anchor = layout.label_anchor(offsets, label.length)
       lines, width, offsets, anchor = layout.accommodate_parent_label(lines, width, offsets, anchor, label.length)
 
       label_line = layout.render_label_line(label, width, anchor)
@@ -146,7 +146,7 @@ module PrettyTree
     end
 
     class Unary < Base
-      def label_anchor(offsets)
+      def label_anchor(offsets, label_length = 0)
         offsets.first
       end
 
@@ -173,11 +173,12 @@ module PrettyTree
 
       def self.empty_box = Box.empty("")
 
-      def label_anchor(offsets)
+      def label_anchor(offsets, label_length = 0)
         return offsets.last - CONNECTOR_SPAN if @boxes.first.empty?
         return offsets.first + CONNECTOR_SPAN if @boxes.last.empty?
 
-        offsets.first + (offsets.last - offsets.first) / 2
+        sum = offsets.first + offsets.last
+        (sum.odd? && label_length.even?) ? (sum + 1) / 2 : sum / 2
       end
 
       def merge
@@ -202,7 +203,7 @@ module PrettyTree
     end
 
     class Ternary < Base
-      def label_anchor(offsets)
+      def label_anchor(offsets, label_length = 0)
         offsets[1]
       end
 
@@ -222,15 +223,16 @@ module PrettyTree
         super(boxes.reject(&:empty?))
       end
 
-      def label_anchor(offsets)
-        middle_or_middle_right_index = offsets.size / 2
-        middle_or_middle_right_offset = offsets[middle_or_middle_right_index]
+      def label_anchor(offsets, label_length = 0)
+        index = offsets.size / 2
+        if offsets.size.odd?
+          offsets[index]
+        else
+          middle_left = offsets[index - 1]
+          middle_right = offsets[index]
 
-        return middle_or_middle_right_offset if offsets.size.odd?
-
-        middle_left_offset = offsets[middle_or_middle_right_index - 1]
-
-        middle_left_offset + ((middle_or_middle_right_offset - middle_left_offset) / 2)
+          middle_left + (middle_right - middle_left) / 2
+        end
       end
 
       def render_connector_lines(parent_label, parent_anchor, offsets, width)

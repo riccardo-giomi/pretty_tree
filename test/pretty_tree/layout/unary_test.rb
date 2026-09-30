@@ -56,4 +56,10 @@ class LayoutUnaryTest < Minitest::Test
 
     assert_equal ["  |  ", "  |  "], connectors_for("1", [tall])
   end
+
+  def test_label_anchor_ignores_the_label_length
+    [1, 2, 4, 6].each do |length|
+      assert_equal 3, PrettyTree::Layout::Unary.new([]).label_anchor([3], length), "for length #{length}"
+    end
+  end
 end

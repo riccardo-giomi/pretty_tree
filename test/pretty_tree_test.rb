@@ -536,4 +536,40 @@ class TestPrettyTree < Minitest::Test
 
     assert_equal expected.join("\n"), PrettyTree.render(tree, adapter: HashAdapterStub.new, formatter: InspectFormatterStub.new)
   end
+
+  def test_renders_an_even_length_label_centered_on_its_connectors
+    expected_lines = [
+      "     \"root\"    ",
+      "     /    \\    ",
+      "    /      \\   ",
+      "\"aaaa\"   \"bbbb\""
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render(["root", ["aaaa", nil, nil], ["bbbb", nil, nil]])
+  end
+
+  def test_renders_a_k_d_tree_with_even_length_labels_on_both_levels
+    expected_lines = [
+      "            [7, 2]       ",
+      "          _____|_____    ",
+      "         /           \\   ",
+      "     [5, 4]        [9, 6]",
+      "     /    \\          /   ",
+      "    /      \\        /    ",
+      "[2, 3]   [4, 7] [8, 1]   "
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([[7, 2], [[5, 4], [[2, 3], nil, nil], [[4, 7], nil, nil]], [[9, 6], [[8, 1], nil, nil], nil]])
+  end
+
+  def test_renders_a_k_d_tree_with_a_full_right_subtree
+    expected_lines = [
+      "              [7, 2]              ",
+      "          _______|______          ",
+      "         /              \\         ",
+      "     [5, 4]           [10, 6]     ",
+      "     /    \\           /     \\     ",
+      "    /      \\         /       \\    ",
+      "[2, 3]   [4, 7] [12, 21]   [1, 35]"
+    ]
+    assert_equal render_lines(expected_lines), PrettyTree.render([[7, 2], [[5, 4], [[2, 3], nil, nil], [[4, 7], nil, nil]], [[10, 6], [[12, 21], nil, nil], [[1, 35], nil, nil]]])
+  end
 end

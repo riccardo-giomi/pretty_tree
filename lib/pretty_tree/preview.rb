@@ -47,6 +47,10 @@ module PrettyTree
       render(["root", [1, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [2, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [3, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [4, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]]])
       render(["root", [1, nil, nil, nil, nil, nil], [2, nil, nil, nil, nil, nil], [3, nil, nil, nil, nil, nil], [4, nil, nil, nil, nil, nil], [5, nil, nil, nil, nil, nil]])
       render(["root", [1, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [2, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [3, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [4, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]], [5, ["a", ["A"]], ["b", ["B"]], ["c", ["C"]]]])
+      render([[7, 2], [[5, 4], [[2, 3], nil, nil], [[4, 7], nil, nil]], [[9, 6], [[8, 1], nil, nil], nil]])
+      render([[7, 2], [[5, 4], [[2, 3], nil, nil], [[4, 7], nil, nil]], [[10, 6], [[12, 21], nil, nil], [[1, 35], nil, nil]]])
+      render(["root", ["aaaa", nil, nil], ["bbbb", nil, nil], ["cccc", nil, nil], ["dddd", nil, nil]])
+      render([1000, *(1..4).map { |n| [1000 + n * 100, *(1..4).map { |m| [1000 + n * 100 + m] }] }])
     end
   end
 end

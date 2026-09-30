@@ -86,4 +86,10 @@ class LayoutTernaryTest < Minitest::Test
 
     assert_equal ["        ______|_______       ", "       /              \\      "], lines
   end
+
+  def test_label_anchor_ignores_the_label_length
+    [1, 2, 4, 6].each do |length|
+      assert_equal 5, PrettyTree::Layout::Ternary.new([]).label_anchor([1, 5, 9], length), "for length #{length}"
+    end
+  end
 end

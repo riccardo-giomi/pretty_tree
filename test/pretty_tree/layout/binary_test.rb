@@ -23,10 +23,14 @@ class LayoutBinaryTest < Minitest::Test
     PrettyTree::Layout::Binary.new([real_box, real_box])
   end
 
+  def anchor_for(offsets, label_length = 1)
+    two_real_boxes.label_anchor(offsets, label_length)
+  end
+
   def connectors_for(label, boxes)
     layout = PrettyTree::Layout::Binary.new(boxes)
     _, width, offsets = layout.merge
-    anchor = layout.label_anchor(offsets)
+    anchor = layout.label_anchor(offsets, label.length)
     layout.render_connector_lines(label, anchor, offsets, width)
   end
 
@@ -84,35 +88,36 @@ class LayoutBinaryTest < Minitest::Test
   end
 
   def test_label_anchor_is_midway_between_the_children_anchors
-    assert_equal 5, two_real_boxes.label_anchor([2, 8])
+    assert_equal 5, anchor_for([2, 8])
   end
 
   def test_label_anchor_for_adjacent_children
-    assert_equal 2, two_real_boxes.label_anchor([1, 4])
+    assert_equal 2, anchor_for([1, 4])
   end
 
   def test_label_anchor_when_the_first_child_anchor_is_not_at_the_start
-    assert_equal 9, two_real_boxes.label_anchor([5, 14])
+    assert_equal 9, anchor_for([5, 14])
   end
 
-  def test_label_anchor_rounds_down_when_the_midpoint_is_fractional
-    assert_equal 6, two_real_boxes.label_anchor([2, 11])
+  def test_label_anchor_rounds_down_for_an_odd_length_label_when_the_midpoint_is_fractional
+    assert_equal 6, anchor_for([2, 11])
   end
 
   def test_label_anchor_with_a_wide_first_child_and_a_leaf
-    assert_equal 6, two_real_boxes.label_anchor([5, 8])
+    assert_equal 6, anchor_for([5, 8])
   end
 
   def test_label_anchor_is_never_left_of_the_first_child_anchor
-    layout = two_real_boxes
-
     [[2, 8], [2, 11], [5, 8], [5, 14], [5, 17], [9, 12]].each do |first, last|
-      assert_operator layout.label_anchor([first, last]), :>=, first
+      [1, 2, 3, 4, 6].each do |length|
+        assert_operator anchor_for([first, last], length), :>=, first, "for #{[first, last]} and length #{length}"
+        assert_operator anchor_for([first, last], length), :<=, last, "for #{[first, last]} and length #{length}"
+      end
     end
   end
 
   def test_label_anchor_of_two_wide_subtrees
-    assert_equal 11, two_real_boxes.label_anchor([5, 17])
+    assert_equal 11, anchor_for([5, 17])
   end
 
   def test_label_anchor_matches_the_merged_children_of_two_leaves
@@ -120,6 +125,29 @@ class LayoutBinaryTest < Minitest::Test
     _, _, offsets = layout.merge
 
     assert_equal 4, layout.label_anchor(offsets)
+  end
+
+  def test_label_anchor_rounds_up_for_an_even_length_label_when_the_midpoint_is_fractional
+    assert_equal 3, anchor_for([1, 4], 2)
+    assert_equal 7, anchor_for([2, 11], 4)
+    assert_equal 10, anchor_for([5, 14], 6)
+    assert_equal 7, anchor_for([5, 8], 4)
+  end
+
+  def test_label_anchor_ignores_the_label_length_when_the_midpoint_is_a_whole_column
+    [1, 2, 3, 4, 5, 6].each do |length|
+      assert_equal 5, anchor_for([2, 8], length), "for length #{length}"
+      assert_equal 11, anchor_for([5, 17], length), "for length #{length}"
+    end
+  end
+
+  def test_label_anchor_of_an_even_length_label_is_centered_on_the_connectors
+    layout = PrettyTree::Layout::Binary.new([left_leaf("a" * 4), right_leaf("b" * 5)])
+    _, _, offsets = layout.merge
+    anchor = layout.label_anchor(offsets, 6)
+
+    assert_equal 1, (offsets.first + offsets.last) % 2
+    assert_equal (offsets.first + offsets.last + 1) / 2, anchor
   end
 
   def test_label_anchor_with_only_a_left_child_is_a_connector_span_to_its_right
@@ -146,6 +174,16 @@ class LayoutBinaryTest < Minitest::Test
 
     assert_equal 11, layout.label_anchor([-40, 14])
     assert_equal 11, layout.label_anchor([0, 14])
+  end
+
+  def test_label_anchor_with_a_single_child_does_not_depend_on_the_label_length
+    only_left = PrettyTree::Layout::Binary.new([real_box, empty])
+    only_right = PrettyTree::Layout::Binary.new([empty, real_box])
+
+    [1, 2, 3, 4, 6].each do |length|
+      assert_equal 8, only_left.label_anchor([5, 14], length), "for length #{length}"
+      assert_equal 11, only_right.label_anchor([0, 14], length), "for length #{length}"
+    end
   end
 
   def test_merge_of_two_leaves_leaves_room_for_both_connectors
