@@ -25,9 +25,26 @@ require_relative "../adapter"
 module PrettyTree
   class Adapter
     class ArrayTree < PrettyTree::Adapter
-      def value(node) = node.first
+      def validate(node)
+        unless node.is_a?(Array) && !node.empty?
+          got = node.is_a?(Array) ? "[]" : node.class.name
+          raise PrettyTree::Error, "invalid tree node, expected non-empty Array, got #{got}"
+        end
+      end
 
-      def children(node) = node[1...]
+      def value(node)
+        validate(node)
+        node.first
+      end
+
+      def children(node)
+        validate(node)
+        children = node[1...]
+
+        children.each { |node| validate(node) unless node.nil? }
+
+        children
+      end
     end
   end
 end

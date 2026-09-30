@@ -19,7 +19,11 @@ module PrettyTree
 
       label = @formatter.label(@adapter.value(node), max_width: @max_width)
       children = @adapter.children(node)
+
+      raise Error, "children must respond to #each" unless children.respond_to?(:each)
+
       # Visit all children, merge getting back from the recursion
+      children = children.to_a
       child_boxes = children.each_with_index.map do |node, i|
         box_for(node, parent_arity: children.size, position: i)
       end

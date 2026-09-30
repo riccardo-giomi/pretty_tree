@@ -8,6 +8,10 @@ class TestPrettyTree < Minitest::Test
     def children(node) = node[:kids]
   end
 
+  class InspectFormatterStub
+    def label(value, max_width: nil) = value.inspect
+  end
+
   class ReverseFormatterStub
     def label(value, max_width: nil) = value.to_s.reverse
   end
@@ -476,5 +480,60 @@ class TestPrettyTree < Minitest::Test
     end
 
     assert_equal "tac\n", out
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_a_string
+    error = assert_raises(PrettyTree::Error) { PrettyTree.render("abc") }
+    assert_includes error.message, "String"
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_a_number
+    assert_raises(PrettyTree::Error) { PrettyTree.render(5) }
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_an_empty_array
+    assert_raises(PrettyTree::Error) { PrettyTree.render([]) }
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_a_child_that_is_not_an_array
+    assert_raises(PrettyTree::Error) { PrettyTree.render(["a", "b"]) }
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_an_empty_array_child
+    assert_raises(PrettyTree::Error) { PrettyTree.render(["a", []]) }
+  end
+
+  def test_render_raises_a_pretty_tree_error_for_an_invalid_node_deep_in_the_tree
+    assert_raises(PrettyTree::Error) { PrettyTree.render([1, [2, [3, 4]], nil]) }
+  end
+
+  def test_print_raises_and_prints_nothing_for_an_invalid_tree
+    out, _err = capture_io do
+      assert_raises(PrettyTree::Error) { PrettyTree.print("abc") }
+    end
+
+    assert_empty out
+  end
+
+  def test_validation_errors_are_rescuable_as_standard_error
+    assert_raises(StandardError) { PrettyTree.render(["a", 1]) }
+  end
+
+  def test_render_still_accepts_nil_children_and_a_nil_tree
+    assert_equal "   ", PrettyTree.render(nil)
+    assert_equal '"a"', PrettyTree.render(["a", nil, nil])
+  end
+
+  def test_validation_does_not_apply_to_a_custom_adapter
+    tree = {label: "cat", kids: []}
+
+    assert_equal "tac", PrettyTree.render(tree, adapter: HashAdapterStub.new, formatter: ReverseFormatterStub.new)
+  end
+
+  def test_render_works_with_a_custom_adapter_over_non_array_nodes
+    tree = {label: "a", kids: [{label: "b", kids: []}, {label: "c", kids: [{label: "d", kids: []}, nil]}]}
+    expected = ["    \"a\"    ", "   /   \\   ", "  /     \\  ", "\"b\"     \"c\"", "        /  ", "       /   ", "     \"d\"   "]
+
+    assert_equal expected.join("\n"), PrettyTree.render(tree, adapter: HashAdapterStub.new, formatter: InspectFormatterStub.new)
   end
 end

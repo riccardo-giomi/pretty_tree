@@ -278,4 +278,137 @@ class RendererTest < Minitest::Test
 
     assert_empty formatter.calls
   end
+
+  class BrokenAdapterStub
+    def initialize(children)
+      @children = children
+    end
+
+    def value(_node) = 1
+
+    def children(_node) = @children
+  end
+
+  def test_box_for_raises_when_the_adapter_children_are_not_an_array
+    renderer = PrettyTree::Renderer.new(adapter: BrokenAdapterStub.new(nil), formatter: InspectFormatterStub.new)
+
+    assert_raises(PrettyTree::Error) { renderer.box_for(:node) }
+  end
+
+  def test_box_for_raises_when_the_adapter_children_are_a_string
+    renderer = PrettyTree::Renderer.new(adapter: BrokenAdapterStub.new("abc"), formatter: InspectFormatterStub.new)
+
+    assert_raises(PrettyTree::Error) { renderer.box_for(:node) }
+  end
+
+  def test_box_for_renders_a_subtree_shared_by_two_parents
+    shared = [3]
+    box = array_renderer.box_for([1, [2, shared], [4, shared]])
+
+    assert_equal 2, box.lines.join.scan("3").size
+  end
+
+  def test_box_for_renders_the_same_leaf_used_in_every_slot
+    leaf = [2]
+    box = array_renderer.box_for([1, leaf, leaf, leaf])
+
+    assert_equal 3, box.lines.last.scan("2").size
+  end
+
+  class TableAdapterStub
+    def initialize(table)
+      @table = table
+    end
+
+    def value(node) = node
+
+    def children(node) = @table.fetch(node)
+  end
+
+  class CustomEnumerable
+    include Enumerable
+
+    def initialize(*items)
+      @items = items
+    end
+
+    def each(&block) = @items.each(&block)
+  end
+
+  def table_renderer(table)
+    PrettyTree::Renderer.new(adapter: TableAdapterStub.new(table), formatter: InspectFormatterStub.new)
+  end
+
+  def lines_for(root, table)
+    table_renderer(table).box_for(root).lines
+  end
+
+  def as_array(root, table)
+    lines_for(root, table.transform_values(&:to_a))
+  end
+
+  def test_box_for_accepts_children_as_a_set
+    table = {a: Set[:b, :c], b: [], c: []}
+
+    assert_equal as_array(:a, table), lines_for(:a, table)
+  end
+
+  def test_box_for_accepts_children_as_a_range
+    table = {1 => (2..3), 2 => [], 3 => []}
+
+    assert_equal as_array(1, table), lines_for(1, table)
+  end
+
+  def test_box_for_accepts_children_as_an_enumerator
+    table = {a: [:b, :c].each, b: [], c: []}
+
+    assert_equal as_array(:a, table), lines_for(:a, table)
+  end
+
+  def test_box_for_accepts_children_as_an_enumerator_without_a_size
+    generated = Enumerator.new { |yielder| yielder << :b << :c }
+    table = {a: generated, b: [], c: []}
+
+    assert_nil generated.size
+    assert_equal as_array(:a, table), lines_for(:a, table)
+  end
+
+  def test_box_for_accepts_children_as_a_custom_enumerable
+    table = {a: CustomEnumerable.new(:b, :c, :d), b: [], c: [], d: []}
+
+    assert_equal as_array(:a, table), lines_for(:a, table)
+  end
+
+  def test_box_for_keeps_the_position_of_nil_slots_in_any_enumerable
+    right_only = {a: CustomEnumerable.new(nil, :c), c: []}
+    left_only = {a: CustomEnumerable.new(:b, nil), b: []}
+
+    assert_equal as_array(:a, right_only), lines_for(:a, right_only)
+    assert_equal as_array(:a, left_only), lines_for(:a, left_only)
+    refute_equal lines_for(:a, right_only), lines_for(:a, left_only)
+  end
+
+  def test_box_for_treats_empty_and_all_nil_enumerables_as_leaves
+    assert_equal [":a"], lines_for(:a, {a: Set[]}).map(&:strip)
+    assert_equal [":a"], lines_for(:a, {a: [].each}).map(&:strip)
+    assert_equal [":a"], lines_for(:a, {a: CustomEnumerable.new(nil, nil)}).map(&:strip)
+  end
+
+  def test_box_for_does_not_look_at_the_type_of_the_children
+    table = {:a => [1, "two", :three], 1 => [], "two" => [], :three => []}
+
+    lines = lines_for(:a, table)
+
+    assert_equal 4, lines.size
+    assert_equal %w[1 "two" :three], lines.last.split
+  end
+
+  def test_box_for_reports_that_children_must_respond_to_each
+    [nil, "abc", 5].each do |children|
+      renderer = table_renderer(a: children)
+
+      error = assert_raises(PrettyTree::Error, "for #{children.inspect}") { renderer.box_for(:a) }
+      assert_match(/each/, error.message)
+    end
+  end
 end
