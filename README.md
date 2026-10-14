@@ -1,4 +1,5 @@
 # PrettyTree
+[![Gem Version](https://badge.fury.io/rb/pretty_tree.svg?icon=si%3Arubygems)](https://rubygems.org/gems/pretty_tree)
 
 Pretty-print tree-shaped data as readable ASCII diagrams — for `#inspect` output, log lines, or debugging.
 
